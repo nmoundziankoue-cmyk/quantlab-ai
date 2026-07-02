@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apexquant-config
+  namespace: apexquant
+data:
+  API_TITLE: "ApexQuant Institutional QR OS"
+  API_VERSION: "8.0.0"
+  ALLOWED_HOSTS: "apexquant.io,api.apexquant.io"

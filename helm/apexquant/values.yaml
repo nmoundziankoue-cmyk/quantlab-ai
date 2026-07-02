@@ -1,0 +1,65 @@
+replicaCount:
+  backend: 2
+  frontend: 2
+
+image:
+  backend:
+    repository: apexquant/backend
+    tag: "8.0.0"
+    pullPolicy: IfNotPresent
+  frontend:
+    repository: apexquant/frontend
+    tag: "8.0.0"
+    pullPolicy: IfNotPresent
+
+service:
+  backend:
+    type: ClusterIP
+    port: 8001
+  frontend:
+    type: ClusterIP
+    port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: apexquant.io
+      paths:
+        - path: /
+          service: frontend
+    - host: api.apexquant.io
+      paths:
+        - path: /
+          service: backend
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+resources:
+  backend:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+  frontend:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+config:
+  apiTitle: "ApexQuant Institutional QR OS"
+  apiVersion: "8.0.0"
+
+secrets:
+  databaseUrl: ""
+  redisUrl: ""
+  jwtSecretKey: ""

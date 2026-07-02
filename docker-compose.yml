@@ -1,0 +1,73 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL ─────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16
+    container_name: apexquant_db
+    environment:
+      POSTGRES_USER: apex
+      POSTGRES_PASSWORD: apex
+      POSTGRES_DB: apexquant
+    ports:
+      - "5432:5432"
+    volumes:
+      - apexquant_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U apex -d apexquant"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis (optional — used for caching and rate limiting) ──────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: apexquant_redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - apexquant_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend (FastAPI) ──────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: apexquant_backend
+    environment:
+      DATABASE_URL: postgresql://apex:apex@db:5432/apexquant
+      REDIS_URL: redis://redis:6379/0
+      API_TITLE: ApexQuant Institutional QR OS
+      API_VERSION: 8.0.0
+    ports:
+      - "8001:8001"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8001 --reload"
+    profiles: ["full"]
+
+  # ── Frontend (Vite dev / nginx prod) ──────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: apexquant_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    profiles: ["full"]
+
+volumes:
+  apexquant_pgdata:
+  apexquant_redis:

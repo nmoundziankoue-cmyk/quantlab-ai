@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-backend-svc
+spec:
+  selector:
+    app: {{ .Release.Name }}-backend
+  ports:
+    - port: {{ .Values.service.backend.port }}
+      targetPort: 8001
+  type: {{ .Values.service.backend.type }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-frontend-svc
+spec:
+  selector:
+    app: {{ .Release.Name }}-frontend
+  ports:
+    - port: {{ .Values.service.frontend.port }}
+      targetPort: 80
+  type: {{ .Values.service.frontend.type }}

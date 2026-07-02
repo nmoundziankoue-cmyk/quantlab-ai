@@ -1,0 +1,12 @@
+apiVersion: v2
+name: apexquant
+description: ApexQuant Institutional Quantitative Research OS — Helm Chart
+type: application
+version: 8.0.0
+appVersion: "8.0.0"
+keywords:
+  - quantitative-finance
+  - trading
+  - research
+maintainers:
+  - name: ApexQuant Team

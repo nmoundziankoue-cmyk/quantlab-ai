@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtualenv
+.venv/
+venv/
+env/
+
+# Secrets & Environment
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets/
+
+# Database
+*.db
+*.sqlite3
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.sw?
+.DS_Store
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.cache/
+
+# Docker
+.dockerignore
+
+# Alembic
+backend/alembic/versions/__pycache__/

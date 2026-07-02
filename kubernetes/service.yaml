@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: apexquant-backend-svc
+  namespace: apexquant
+spec:
+  selector:
+    app: apexquant-backend
+  ports:
+    - protocol: TCP
+      port: 8001
+      targetPort: 8001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apexquant-frontend-svc
+  namespace: apexquant
+spec:
+  selector:
+    app: apexquant-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
