@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:8001";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8001";
 
 export const getSystemHealth = () =>
   axios.get(`${API}/system/health/detailed`).then((r) => r.data);

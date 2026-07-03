@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: quantlab-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    region: oregon
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///./quantlab_demo.db
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      - key: CORS_ORIGINS
+        value: ""
+      - key: REDIS_URL
+        value: ""
+      - key: API_TITLE
+        value: QuantLab AI
+      - key: API_VERSION
+        value: "2.0.0"

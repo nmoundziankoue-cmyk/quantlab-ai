@@ -25,8 +25,8 @@ export const CHANNELS = {
 
 const WS_BASE = (() => {
   const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-  const host = import.meta.env.VITE_API_BASE_URL
-    ? import.meta.env.VITE_API_BASE_URL.replace(/^https?:/, proto)
+  const host = import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL.replace(/^https?:/, proto)
     : `${proto}//localhost:8001`;
   return host;
 })();
@@ -60,14 +60,14 @@ export function getWsUrl({ channels = [] } = {}) {
 
 /** Fetch the channel registry from the server. */
 export async function fetchChannels() {
-  const base = import.meta.env.VITE_API_BASE_URL || "http://localhost:8001";
+  const base = import.meta.env.VITE_API_URL || "http://localhost:8001";
   const res = await fetch(`${base}/ws/v2/channels`);
   return res.json();
 }
 
 /** Fetch v2 streaming status. */
 export async function fetchStreamingStatus() {
-  const base = import.meta.env.VITE_API_BASE_URL || "http://localhost:8001";
+  const base = import.meta.env.VITE_API_URL || "http://localhost:8001";
   const res = await fetch(`${base}/ws/v2/status`);
   return res.json();
 }

@@ -1,4 +1,4 @@
-const BASE = "http://localhost:8001/economic-calendar";
+const BASE = `${import.meta.env.VITE_API_URL ?? "http://localhost:8001"}/economic-calendar`;
 
 export const economicCalendarApi = {
   createEvent: (body) => fetch(`${BASE}/events`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json()),

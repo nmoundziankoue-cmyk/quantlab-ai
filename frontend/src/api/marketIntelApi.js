@@ -1,4 +1,4 @@
-const BASE = "http://localhost:8001/market-intel";
+const BASE = `${import.meta.env.VITE_API_URL ?? "http://localhost:8001"}/market-intel`;
 
 export const marketIntelApi = {
   getSectorHeatmap: (period = "1D") => fetch(`${BASE}/sector-heatmap?period=${period}`).then((r) => r.json()),

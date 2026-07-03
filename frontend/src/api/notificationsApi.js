@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:8001";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8001";
 
 export const sendNotification = (data) =>
   axios.post(`${API}/notifications/send`, data).then((r) => r.data);

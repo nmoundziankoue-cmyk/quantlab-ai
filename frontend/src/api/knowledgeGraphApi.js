@@ -1,4 +1,4 @@
-const BASE = "http://localhost:8001/knowledge-graph";
+const BASE = `${import.meta.env.VITE_API_URL ?? "http://localhost:8001"}/knowledge-graph`;
 
 export const knowledgeGraphApi = {
   createEntity: (body) => fetch(`${BASE}/entities`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json()),

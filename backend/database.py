@@ -11,13 +11,14 @@ from config import settings
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-engine = create_engine(
-    settings.database_url,
-    pool_pre_ping=True,   # reconnect on stale connections
-    pool_size=10,
-    max_overflow=20,
-    echo=False,
-)
+_sqlite = settings.database_url.startswith("sqlite")
+_engine_kw: dict = {"pool_pre_ping": True, "echo": False}
+if _sqlite:
+    _engine_kw["connect_args"] = {"check_same_thread": False}
+else:
+    _engine_kw.update({"pool_size": 10, "max_overflow": 20})
+
+engine = create_engine(settings.database_url, **_engine_kw)
 
 
 # ---------------------------------------------------------------------------
