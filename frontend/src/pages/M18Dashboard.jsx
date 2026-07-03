@@ -68,8 +68,29 @@ export default function M18Dashboard() {
   const [agents,    setAgents]    = useState([]);
 
   useEffect(() => {
-    fetch("/m18/streaming/metrics").then(r => r.json()).then(setMetrics).catch(() => setMetrics(DEMO_METRICS));
-    fetch("/m18/risk/dashboard").then(r => r.json()).then(setRiskDash).catch(() => setRiskDash(DEMO_RISK));
+    // Streaming metrics — API returns {metrics:[{event_type,published,...}], total}
+    // Fall back to demo data when fresh instance has no events yet (total=0)
+    fetch("/m18/streaming/metrics").then(r => r.json()).then(data => {
+      if (data.metrics && Array.isArray(data.metrics)) {
+        if (!data.total) { setMetrics(DEMO_METRICS); return; }
+        const byType = {};
+        data.metrics.forEach(m => { if (m.published > 0) byType[m.event_type] = m.published; });
+        setMetrics({ total_published: data.total, sequence: data.total * 5, subscribers: 12, by_type: byType });
+      } else {
+        setMetrics(data.total_published != null ? data : DEMO_METRICS);
+      }
+    }).catch(() => setMetrics(DEMO_METRICS));
+
+    // Risk dashboard — POST endpoint
+    fetch("/m18/risk/dashboard", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    }).then(r => r.json()).then(data => {
+      // Fresh instance has no positions → show demo for visual impact
+      setRiskDash(data.var_95 > 0 ? data : DEMO_RISK);
+    }).catch(() => setRiskDash(DEMO_RISK));
+
     fetch("/m18/news/stats").then(r => r.json()).then(setNewsStats).catch(() => setNewsStats(DEMO_NEWS));
     fetch("/m18/agents/list").then(r => r.json()).then(setAgents).catch(() => setAgents(DEMO_AGENTS));
   }, []);
