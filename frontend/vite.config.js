@@ -4,6 +4,16 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/quant': 'http://localhost:8001',
+      '/m18': 'http://localhost:8001',
+      '/research': 'http://localhost:8001',
+      '/system': 'http://localhost:8001',
+      '/market': 'http://localhost:8001',
+      '/portfolio': 'http://localhost:8001',
+    },
+  },
   build: {
     chunkSizeWarningLimit: 600,
     rollupOptions: {

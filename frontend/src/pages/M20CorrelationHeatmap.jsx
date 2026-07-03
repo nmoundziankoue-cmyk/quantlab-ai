@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const API = "/quant/m20";
 
@@ -63,6 +63,9 @@ export default function M20CorrelationHeatmap() {
       setLoading(false);
     }
   }
+
+  // Auto-run on mount with default tickers and n=120
+  useEffect(() => { computeMatrix(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{ maxWidth: 780, margin: "0 auto", padding: "2rem 1rem" }}>

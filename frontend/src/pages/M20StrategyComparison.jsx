@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const API = "/quant/m20";
 
@@ -88,6 +88,9 @@ export default function M20StrategyComparison() {
       setLoading(false);
     }
   }
+
+  // Auto-run on mount so ranking table appears immediately
+  useEffect(() => { run(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fmt = (v, pct) => (v == null ? "—" : pct ? `${(v * 100).toFixed(2)}%` : v.toFixed(4));
 

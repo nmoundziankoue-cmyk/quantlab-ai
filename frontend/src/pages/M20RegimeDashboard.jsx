@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const API = "/quant/m20";
 
@@ -71,6 +71,9 @@ export default function M20RegimeDashboard() {
       setLoading(false);
     }
   }
+
+  // Auto-run on mount with default BULL drift so the page loads with data
+  useEffect(() => { detect(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const last10 = result ? result.history.slice(-10).reverse() : [];
   const regimeCounts = result

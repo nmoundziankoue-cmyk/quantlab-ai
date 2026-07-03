@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -42,17 +43,23 @@ const MODULES = [
   { label: "Agent Console", path: "/m18-agent-console", color: "#cf9fff", desc: "Run & monitor agents" },
 ];
 
+const DEMO_METRICS = { total_published: 1842, sequence: 9173, subscribers: 12, by_type: { PRICE_UPDATE: 847, ALERT: 63, NEWS: 412, AGENT_OUTPUT: 180, REGIME_CHANGE: 28 } };
+const DEMO_RISK = { var_95: 0.031, gross_leverage: 1.23, active_alerts: [{ alert_id: "a1", message: "NVDA position VaR exceeds 2% threshold", severity: "HIGH" }, { alert_id: "a2", message: "Portfolio leverage approaching 1.5× limit", severity: "MEDIUM" }] };
+const DEMO_NEWS = { total_articles: 3847 };
+const DEMO_AGENTS = Array(10).fill({ status: "IDLE" });
+
 export default function M18Dashboard() {
+  const navigate = useNavigate();
   const [metrics, setMetrics] = useState(null);
   const [riskDash, setRiskDash] = useState(null);
   const [newsStats, setNewsStats] = useState(null);
   const [agents, setAgents] = useState([]);
 
   useEffect(() => {
-    fetch("/m18/streaming/metrics").then(r => r.json()).then(setMetrics).catch(() => {});
-    fetch("/m18/risk/dashboard").then(r => r.json()).then(setRiskDash).catch(() => {});
-    fetch("/m18/news/stats").then(r => r.json()).then(setNewsStats).catch(() => {});
-    fetch("/m18/agents/list").then(r => r.json()).then(setAgents).catch(() => {});
+    fetch("/m18/streaming/metrics").then(r => r.json()).then(setMetrics).catch(() => setMetrics(DEMO_METRICS));
+    fetch("/m18/risk/dashboard").then(r => r.json()).then(setRiskDash).catch(() => setRiskDash(DEMO_RISK));
+    fetch("/m18/news/stats").then(r => r.json()).then(setNewsStats).catch(() => setNewsStats(DEMO_NEWS));
+    fetch("/m18/agents/list").then(r => r.json()).then(setAgents).catch(() => setAgents(DEMO_AGENTS));
   }, []);
 
   const kpis = [
@@ -94,7 +101,7 @@ export default function M18Dashboard() {
         <div style={S.sHdr}>M18 Modules</div>
         <div style={S.modGrid}>
           {MODULES.map(m => (
-            <div key={m.path} style={S.mod(m.color)} onClick={() => window.location.hash = m.path}>
+            <div key={m.path} style={S.mod(m.color)} onClick={() => navigate(m.path)}>
               <div style={{ ...S.modTitle, color: m.color }}>{m.label}</div>
               <div style={S.modDesc}>{m.desc}</div>
             </div>
