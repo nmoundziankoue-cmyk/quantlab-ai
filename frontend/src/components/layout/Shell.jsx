@@ -54,9 +54,11 @@ export default function Shell() {
       <div style={S.content}>
         <Topbar wsState={wsState} />
         <main style={S.main}>
-          <ErrorBoundary key={pathname}>
-            <Outlet />
-          </ErrorBoundary>
+          <div key={pathname} className="ql-page-enter">
+            <ErrorBoundary key={pathname}>
+              <Outlet />
+            </ErrorBoundary>
+          </div>
         </main>
       </div>
     </div>
