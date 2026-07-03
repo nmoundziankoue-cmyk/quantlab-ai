@@ -37,6 +37,12 @@ client.interceptors.response.use(
     const msg = Array.isArray(detail) ? detail[0]?.msg : detail;
 
     if (err.response?.status === 401 && !originalRequest._retry) {
+      // Guest mode: if the original request had no auth header, don't attempt
+      // refresh or redirect — just surface the 401 as a plain error.
+      if (!originalRequest.headers?.Authorization) {
+        return Promise.reject(new Error(msg));
+      }
+
       originalRequest._retry = true;
 
       if (_isRefreshing) {
