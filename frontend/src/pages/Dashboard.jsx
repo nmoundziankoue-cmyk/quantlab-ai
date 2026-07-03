@@ -1,4 +1,6 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
@@ -60,6 +62,79 @@ const MODULES = [
 
 const fmtUSD = (v) => "$" + Number(v).toLocaleString("en-US", { minimumFractionDigits: 0 });
 
+// ── Count-up hook — RAF-based, ease-out cubic ─────────────────────────────────
+function useCountUp(to, duration = 1400) {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    let raf;
+    let start;
+    const step = (ts) => {
+      if (!start) start = ts;
+      const t = Math.min((ts - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setV(eased * to);
+      if (t < 1) raf = requestAnimationFrame(step);
+      else setV(to);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [to, duration]);
+  return v;
+}
+
+// ── KPI card: entrance fade+slide, count-up value, hover lift ─────────────────
+function KpiCard({ label, numValue, format, sub, color, delay }) {
+  const animated = useCountUp(numValue);
+  const [hover, setHover] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const id = setTimeout(() => setVisible(true), delay * 1000);
+    return () => clearTimeout(id);
+  }, [delay]);
+
+  return (
+    <div
+      style={{
+        ...S.kpiCard,
+        opacity: visible ? 1 : 0,
+        transform: `translateY(${!visible ? 8 : hover ? -3 : 0}px)`,
+        boxShadow: hover ? `0 8px 24px ${color}22` : "none",
+        transition: "opacity 0.4s ease-out, transform 0.35s ease-out, box-shadow 0.2s ease-out",
+      }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      <div className="ql-label" style={{ marginBottom: 6 }}>{label}</div>
+      <div className="ql-value" style={{ fontSize: 24, fontWeight: 600, color, marginBottom: 2, lineHeight: 1 }}>
+        {format(animated)}
+      </div>
+      <div style={S.kpiSub}>{sub}</div>
+    </div>
+  );
+}
+
+// ── Allocation bar — animates width on mount ──────────────────────────────────
+function AllocBar({ color, weight }) {
+  const [w, setW] = useState(0);
+  useEffect(() => {
+    const id = setTimeout(() => setW(weight * 100), 80);
+    return () => clearTimeout(id);
+  }, [weight]);
+  return (
+    <div style={{ height: 3, background: "#232A3D", borderRadius: 2 }}>
+      <div style={{
+        height: "100%",
+        width: `${w}%`,
+        background: color,
+        borderRadius: 2,
+        transition: "width 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      }} />
+    </div>
+  );
+}
+
+// ── Chart tooltip ─────────────────────────────────────────────────────────────
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
@@ -84,18 +159,18 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const last  = EQUITY_DATA[EQUITY_DATA.length - 1];
   const first = EQUITY_DATA[0];
-  const pnl     = last.portfolio - first.portfolio;
-  const pnlPct  = ((last.portfolio / first.portfolio - 1) * 100).toFixed(1);
+  const pnl      = last.portfolio - first.portfolio;
+  const pnlPct   = ((last.portfolio / first.portfolio - 1) * 100).toFixed(1);
   const benchPct = ((last.benchmark / first.benchmark - 1) * 100).toFixed(1);
-  const alpha   = (parseFloat(pnlPct) - parseFloat(benchPct)).toFixed(1);
+  const alpha    = (parseFloat(pnlPct) - parseFloat(benchPct)).toFixed(1);
 
   const kpis = [
-    { label: "Portfolio NAV",  value: fmtUSD(last.portfolio), sub: "Global Macro · USD",       color: "#DDE2EE" },
-    { label: "P&L YTD",        value: `+${fmtUSD(pnl)}`,     sub: `+${pnlPct}% return`,       color: "#27C784" },
-    { label: "vs S&P 500",     value: `+${alpha}%`,           sub: `Benchmark +${benchPct}%`,  color: "#27C784" },
-    { label: "Sharpe Ratio",   value: "1.84",                 sub: "Ann. · rf = 5.0%",         color: "#E2A52B" },
-    { label: "Max Drawdown",   value: "−4.2%",                sub: "Peak-to-trough",            color: "#E5473E" },
-    { label: "Win Rate",       value: "61.5%",                sub: "Profitable weeks",          color: "#E2A52B" },
+    { label: "Portfolio NAV", numValue: last.portfolio,      format: (v) => "$" + Math.round(v).toLocaleString("en-US"), sub: "Global Macro · USD",       color: "#DDE2EE" },
+    { label: "P&L YTD",       numValue: pnl,                 format: (v) => "+$" + Math.round(v).toLocaleString("en-US"), sub: `+${pnlPct}% return`,      color: "#27C784" },
+    { label: "vs S&P 500",    numValue: parseFloat(alpha),   format: (v) => "+" + v.toFixed(1) + "%",                    sub: `Benchmark +${benchPct}%`,  color: "#27C784" },
+    { label: "Sharpe Ratio",  numValue: 1.84,                format: (v) => v.toFixed(2),                                sub: "Ann. · rf = 5.0%",         color: "#E2A52B" },
+    { label: "Max Drawdown",  numValue: 4.2,                 format: (v) => "−" + v.toFixed(1) + "%",                   sub: "Peak-to-trough",            color: "#E5473E" },
+    { label: "Win Rate",      numValue: 61.5,                format: (v) => v.toFixed(1) + "%",                         sub: "Profitable weeks",          color: "#E2A52B" },
   ];
 
   return (
@@ -107,22 +182,22 @@ export default function Dashboard() {
           <p style={S.h1Sub}>Institutional Quant Research · M0–M20 · Pure Python · 4,660 tests</p>
         </div>
         <div style={S.pills}>
-          <span style={{ ...S.pill, color: "#27C784", background: "#27C78412" }}>● LIVE</span>
+          <motion.span
+            style={{ ...S.pill, color: "#27C784", background: "#27C78412" }}
+            animate={{ opacity: [1, 0.45, 1] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+          >
+            ● LIVE
+          </motion.span>
           <span style={{ ...S.pill, color: "#9D7FEA", background: "#9D7FEA12" }}>4,660 tests</span>
           <span style={{ ...S.pill, color: "#567EFF", background: "#567EFF12" }}>40+ services</span>
         </div>
       </div>
 
-      {/* KPI row */}
+      {/* KPI row — animated count-up + entrance + hover */}
       <div style={S.kpiGrid}>
-        {kpis.map((k) => (
-          <div key={k.label} style={S.kpiCard}>
-            <div className="ql-label" style={{ marginBottom: 6 }}>{k.label}</div>
-            <div className="ql-value" style={{ fontSize: 24, fontWeight: 600, color: k.color, marginBottom: 2, lineHeight: 1 }}>
-              {k.value}
-            </div>
-            <div style={S.kpiSub}>{k.sub}</div>
-          </div>
+        {kpis.map((k, i) => (
+          <KpiCard key={k.label} {...k} delay={i * 0.07} />
         ))}
       </div>
 
@@ -166,9 +241,7 @@ export default function Dashboard() {
                 <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "#DDE2EE" }}>{a.name}</span>
                 <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "#7A84A0" }}>{(a.weight * 100).toFixed(0)}%</span>
               </div>
-              <div style={{ height: 3, background: "#232A3D", borderRadius: 2 }}>
-                <div style={{ height: "100%", width: `${a.weight * 100}%`, background: a.color, borderRadius: 2 }} />
-              </div>
+              <AllocBar color={a.color} weight={a.weight} />
             </div>
           ))}
         </div>
@@ -178,15 +251,21 @@ export default function Dashboard() {
       <div style={S.row}>
         <div style={{ ...S.panel, flex: 1 }}>
           <div style={S.panelTitle}>Activity Log</div>
-          {ACTIVITY.map((a) => (
-            <div key={a.time + a.action} style={S.actRow}>
+          {ACTIVITY.map((a, i) => (
+            <motion.div
+              key={a.time + a.action}
+              style={S.actRow}
+              initial={{ opacity: 0, x: -14 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 + i * 0.08, duration: 0.32, ease: "easeOut" }}
+            >
               <span className="ql-value" style={{ fontSize: 10, color: "#454D66", width: 36, flexShrink: 0 }}>{a.time}</span>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: a.color, flexShrink: 0, marginTop: 3 }} />
               <div>
                 <div style={{ fontSize: 12, fontWeight: 600, color: "#DDE2EE", fontFamily: "var(--font-display)" }}>{a.action}</div>
                 <div className="ql-value" style={{ fontSize: 10, color: "#7A84A0" }}>{a.detail}</div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
@@ -194,18 +273,26 @@ export default function Dashboard() {
           <div style={S.panelTitle}>Platform Modules</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {MODULES.map((m) => (
-              <button
+              <motion.button
                 key={m.path}
                 style={{ ...S.modCard, borderColor: m.color + "28" }}
-                onMouseEnter={(e) => e.currentTarget.style.borderColor = m.color + "88"}
-                onMouseLeave={(e) => e.currentTarget.style.borderColor = m.color + "28"}
+                whileHover={{ scale: 1.03, y: -2 }}
+                transition={{ type: "spring", stiffness: 500, damping: 26 }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = m.color + "90";
+                  e.currentTarget.style.boxShadow = `0 6px 20px ${m.color}18`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = m.color + "28";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
                 onClick={() => navigate(m.path)}
               >
                 <div style={{ fontFamily: "var(--font-display)", fontSize: 11, fontWeight: 700, color: m.color, marginBottom: 2 }}>
                   {m.label}
                 </div>
                 <div className="ql-value" style={{ fontSize: 9, color: "#454D66" }}>{m.sub}</div>
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>
@@ -222,7 +309,7 @@ const S = {
   pills:    { display: "flex", gap: 8, alignItems: "center" },
   pill:     { fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600, padding: "3px 10px", borderRadius: 4, letterSpacing: "0.04em" },
   kpiGrid:  { display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 10, marginBottom: 16 },
-  kpiCard:  { background: "#131720", border: "1px solid #232A3D", borderRadius: 7, padding: "14px 16px" },
+  kpiCard:  { background: "#131720", border: "1px solid #232A3D", borderRadius: 7, padding: "14px 16px", cursor: "default" },
   kpiSub:   { fontFamily: "var(--font-mono)", fontSize: 9, color: "#454D66", marginTop: 2 },
   row:      { display: "flex", gap: 12, marginBottom: 12 },
   panel:    { background: "#131720", border: "1px solid #232A3D", borderRadius: 7, padding: "16px 18px" },
@@ -243,7 +330,7 @@ const S = {
     padding: "10px 12px",
     textAlign: "left",
     cursor: "pointer",
-    transition: "border-color 0.15s",
     width: "100%",
+    transition: "border-color 0.15s, box-shadow 0.2s",
   },
 };
