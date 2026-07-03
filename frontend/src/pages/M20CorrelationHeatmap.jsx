@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 
 const API = "/quant/m20";
 
@@ -7,7 +8,6 @@ function cellColor(corr) {
   if (corr === null) return "#232A3D";
   const v = Math.max(-1, Math.min(1, corr));
   if (v >= 0) {
-    // 0 → panel, 1 → positive green at 60% opacity
     const alpha = Math.round(v * 180).toString(16).padStart(2, "0");
     return `#27C784${alpha}`;
   }
@@ -36,6 +36,10 @@ export default function M20CorrelationHeatmap() {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState("");
   const [n, setN]             = useState(120);
+
+  // 3D tilt state for the heatmap panel
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
+  const panelRef = useRef(null);
 
   async function computeMatrix() {
     setLoading(true);
@@ -66,6 +70,18 @@ export default function M20CorrelationHeatmap() {
   }
 
   useEffect(() => { computeMatrix(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 3D tilt handlers — no transition during move (instant), smooth return on leave
+  const handleMouseMove = (e) => {
+    if (!panelRef.current) return;
+    const rect = panelRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    setTilt({ rx: -y * 8, ry: x * 8 });
+  };
+  const handleMouseLeave = () => setTilt({ rx: 0, ry: 0 });
+
+  const isFlat = tilt.rx === 0 && tilt.ry === 0;
 
   return (
     <div style={S.root}>
@@ -104,7 +120,7 @@ export default function M20CorrelationHeatmap() {
 
       {matrix && (
         <>
-          {/* Stats strip */}
+          {/* Stats strip — staggered entrance */}
           <div style={S.statsRow}>
             {[
               { label: "Observations", value: matrix.num_observations },
@@ -112,16 +128,38 @@ export default function M20CorrelationHeatmap() {
               { label: "Max corr",     value: matrix.max_correlation.toFixed(3) },
               { label: "Avg |corr|",   value: matrix.avg_correlation.toFixed(3) },
               { label: "Tickers",      value: matrix.tickers.join(" · ") },
-            ].map((s) => (
-              <div key={s.label} style={S.statCell}>
+            ].map((s, i) => (
+              <motion.div
+                key={s.label}
+                style={S.statCell}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.07, duration: 0.3, ease: "easeOut" }}
+              >
                 <div className="ql-label" style={{ marginBottom: 4 }}>{s.label}</div>
                 <div className="ql-value" style={{ fontSize: 15, fontWeight: 600, color: "#E2A52B" }}>{s.value}</div>
-              </div>
+              </motion.div>
             ))}
           </div>
 
-          {/* Heatmap */}
-          <div style={S.panel}>
+          {/* Heatmap panel — 3D perspective tilt on mouse move */}
+          <div
+            ref={panelRef}
+            style={{
+              ...S.panel,
+              transform: `perspective(700px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
+              transition: isFlat
+                ? "transform 0.55s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.55s ease-out"
+                : "none",
+              boxShadow: isFlat
+                ? "0 0 0 rgba(0,0,0,0)"
+                : "0 28px 70px rgba(0,0,0,0.55), 0 8px 24px rgba(86,126,255,0.12)",
+              cursor: "crosshair",
+              willChange: "transform",
+            }}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+          >
             <div style={S.panelTitle}>Pearson Correlation Matrix</div>
             <div style={{ overflowX: "auto" }}>
               <table style={{ borderCollapse: "collapse", fontFamily: "var(--font-mono)" }}>
@@ -156,8 +194,10 @@ export default function M20CorrelationHeatmap() {
                               color: isDiag ? "#DDE2EE" : Math.abs(corr) > 0.4 ? "#DDE2EE" : "#7A84A0",
                               borderRadius: 3,
                               cursor: "default",
-                              transition: "opacity 0.1s",
+                              transition: "filter 0.12s ease-out",
                             }}
+                            onMouseEnter={(e) => { e.currentTarget.style.filter = "brightness(1.35)"; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.filter = ""; }}
                           >
                             {corr.toFixed(3)}
                           </td>
