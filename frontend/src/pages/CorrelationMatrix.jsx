@@ -33,7 +33,7 @@ function HeatmapCell({ value, isSelf }) {
 
 export default function CorrelationMatrix() {
   const [matrix, setMatrix] = useState(null);
-  const [tickers, setTickers] = useState(null);
+  const [tickers, setTickers] = useState([]);
   const [method, setMethod] = useState("pearson");
   const [window, setWindow] = useState("");
   const [loading, setLoading] = useState(false);
@@ -99,14 +99,14 @@ export default function CorrelationMatrix() {
               <thead>
                 <tr>
                   <th style={{ padding: "8px 12px", fontSize: 11, color: "#8b949e", textAlign: "left" }}></th>
-                  {tickers.map(t => <th key={t} style={{ padding: "8px 10px", fontSize: 12, color: "#58a6ff", textAlign: "center" }}>{t}</th>)}
+                  {(tickers ?? []).map(t => <th key={t} style={{ padding: "8px 10px", fontSize: 12, color: "#58a6ff", textAlign: "center" }}>{t}</th>)}
                 </tr>
               </thead>
               <tbody>
-                {tickers.map((rt, i) => (
+                {(tickers ?? []).map((rt, i) => (
                   <tr key={rt}>
                     <td style={{ padding: "10px 12px", fontSize: 12, fontWeight: 700, color: "#58a6ff" }}>{rt}</td>
-                    {matrix[i].map((v, j) => <HeatmapCell key={j} value={v} isSelf={i === j} />)}
+                    {(matrix?.[i] ?? []).map((v, j) => <HeatmapCell key={j} value={v} isSelf={i === j} />)}
                   </tr>
                 ))}
               </tbody>

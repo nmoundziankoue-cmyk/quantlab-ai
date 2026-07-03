@@ -128,7 +128,7 @@ export default function CatalystDashboard() {
           ) : catalysts.length === 0 ? (
             <div style={{ ...CARD, color: "#8b949e" }}>No catalysts found. Add corporate events first.</div>
           ) : (
-            catalysts.map((c, i) => <CatalystCard key={c.event_id || i} c={c} />)
+            (catalysts ?? []).map((c, i) => <CatalystCard key={c.event_id || i} c={c} />)
           )}
         </div>
 

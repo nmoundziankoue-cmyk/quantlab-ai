@@ -70,7 +70,7 @@ function DocumentListTab() {
           <table style={S.table}>
             <thead><tr><th style={S.th}>Doc ID</th><th style={S.th}>Symbol</th><th style={S.th}>Type</th><th style={S.th}>Source</th><th style={S.th}>Version</th><th style={S.th}>Size</th><th style={S.th}>Checksum</th></tr></thead>
             <tbody>
-              {data.map(d => (
+              {(data ?? []).map(d => (
                 <tr key={d.doc_id}>
                   <td style={{ ...S.td, fontFamily: "monospace", fontSize: 11 }}>{d.doc_id}</td>
                   <td style={{ ...S.td, fontWeight: 700 }}>{d.symbol}</td>

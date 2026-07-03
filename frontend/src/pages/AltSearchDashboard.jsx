@@ -140,7 +140,7 @@ export default function AltSearchDashboard() {
               <div style={{ fontSize: 12, marginTop: 8 }}>Ingest documents via the Alternative Data Explorer first.</div>
             </div>
           ) : (
-            result.hits.map((hit, i) => (
+            (result?.hits ?? []).map((hit, i) => (
               <div key={hit.doc_id} style={S.hitCard}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                   <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>

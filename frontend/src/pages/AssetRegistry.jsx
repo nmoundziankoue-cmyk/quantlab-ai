@@ -11,7 +11,7 @@ export default function AssetRegistry() {
   const [assets, setAssets] = useState([]);
   const [stats, setStats] = useState(null);
   const [search, setSearch] = useState("");
-  const [searchResults, setSearchResults] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
   const [form, setForm] = useState({ ticker: "", name: "", asset_type: "equity", country: "US", currency: "USD", sector: "", description: "" });
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -83,7 +83,7 @@ export default function AssetRegistry() {
             <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}>
               <thead><tr>{["Ticker", "Name", "Type", "Country", "Currency", "Sector"].map(h => <th key={h} style={{ textAlign: "left", padding: "6px 8px", fontSize: 11, color: "#8b949e", borderBottom: "1px solid #21262d" }}>{h}</th>)}</tr></thead>
               <tbody>
-                {assets.map(a => (
+                {(assets ?? []).map(a => (
                   <tr key={a.asset_id}>
                     <td style={{ padding: "7px 8px", fontWeight: 700, color: "#58a6ff", fontSize: 12 }}>{a.ticker}</td>
                     <td style={{ padding: "7px 8px", fontSize: 12, color: "#c9d1d9" }}>{a.name}</td>
@@ -136,7 +136,7 @@ export default function AssetRegistry() {
             <div style={CARD}>
               <div style={LABEL}>{searchResults.length} result{searchResults.length !== 1 ? "s" : ""}</div>
               {searchResults.length === 0 ? <div style={{ fontSize: 12, color: "#8b949e" }}>No assets found</div> : (
-                searchResults.map(a => (
+                (searchResults ?? []).map(a => (
                   <div key={a.asset_id} style={{ padding: "8px 0", borderBottom: "1px solid #21262d" }}>
                     <span style={{ fontWeight: 700, color: "#58a6ff", fontSize: 13 }}>{a.ticker}</span>
                     <span style={{ color: "#c9d1d9", fontSize: 12, marginLeft: 8 }}>{a.name}</span>

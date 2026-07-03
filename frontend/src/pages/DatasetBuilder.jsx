@@ -139,7 +139,7 @@ export default function DatasetBuilderPage() {
           </div>
 
           <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-            {result.splits.map(sp => (
+            {(result?.splits ?? []).map(sp => (
               <div key={sp.split} style={{ ...S.splitCard, borderLeft: `3px solid ${SPLIT_COLORS[sp.split]}` }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: SPLIT_COLORS[sp.split], marginBottom: 8, textTransform: "uppercase" }}>{sp.split}</div>
                 <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>{sp.n_samples.toLocaleString()} rows</div>

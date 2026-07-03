@@ -46,7 +46,7 @@ function MetricsTab() {
                 <table style={S.table}>
                   <thead><tr><th style={S.th}>Rank</th><th style={S.th}>Node ID</th><th style={S.th}>Centrality Score</th></tr></thead>
                   <tbody>
-                    {data.top_central_nodes.map((n, i) => (
+                    {(data?.top_central_nodes ?? []).map((n, i) => (
                       <tr key={n.node_id}>
                         <td style={{ ...S.td, color: "#8b949e" }}>#{i + 1}</td>
                         <td style={{ ...S.td, fontWeight: 700 }}>{n.node_id}</td>
@@ -93,7 +93,7 @@ function DependencyChainTab() {
             <div>
               <div style={{ fontSize: 13, color: "#3fb950", marginBottom: 12 }}>Path found ({result.path.length} nodes)</div>
               <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-                {result.path.map((node, i) => (
+                {(result?.path ?? []).map((node, i) => (
                   <span key={`${node}-${i}`} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <span style={{ background: "#1f3245", border: "1px solid #1f6feb", borderRadius: 6, padding: "4px 12px", fontSize: 13, color: "#58a6ff", fontWeight: 600 }}>{node}</span>
                     {i < result.path.length - 1 && <span style={{ color: "#8b949e", fontSize: 18 }}>→</span>}

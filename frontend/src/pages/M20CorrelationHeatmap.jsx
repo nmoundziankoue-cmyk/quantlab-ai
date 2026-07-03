@@ -128,7 +128,7 @@ export default function M20CorrelationHeatmap() {
                 <thead>
                   <tr>
                     <th style={{ padding: "6px 14px", textAlign: "right", color: "#454D66", fontSize: 10 }}></th>
-                    {matrix.tickers.map((t) => (
+                    {(matrix?.tickers ?? []).map((t) => (
                       <th key={t} style={{ padding: "6px 14px", color: "#7A84A0", fontSize: 11, fontWeight: 600, minWidth: 90, textAlign: "center" }}>
                         {t}
                       </th>
@@ -136,12 +136,12 @@ export default function M20CorrelationHeatmap() {
                   </tr>
                 </thead>
                 <tbody>
-                  {matrix.tickers.map((rowTicker, i) => (
+                  {(matrix?.tickers ?? []).map((rowTicker, i) => (
                     <tr key={rowTicker}>
                       <td style={{ padding: "6px 14px", color: "#7A84A0", fontWeight: 600, fontSize: 11, textAlign: "right", whiteSpace: "nowrap" }}>
                         {rowTicker}
                       </td>
-                      {matrix.values[i].map((corr, j) => {
+                      {(matrix?.values?.[i] ?? []).map((corr, j) => {
                         const isDiag = i === j;
                         return (
                           <td

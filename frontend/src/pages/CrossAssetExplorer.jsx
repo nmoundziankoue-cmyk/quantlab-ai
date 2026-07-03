@@ -89,13 +89,13 @@ export default function CrossAssetExplorer() {
             <table style={{ borderCollapse: "collapse" }}>
               <thead><tr>
                 <th style={{ padding: "6px 12px", fontSize: 11, color: "#8b949e" }}></th>
-                {spillover.tickers.map(t => <th key={t} style={{ padding: "6px 10px", fontSize: 12, color: "#58a6ff", textAlign: "center" }}>{t}</th>)}
+                {(spillover?.tickers ?? []).map(t => <th key={t} style={{ padding: "6px 10px", fontSize: 12, color: "#58a6ff", textAlign: "center" }}>{t}</th>)}
               </tr></thead>
               <tbody>
-                {spillover.tickers.map((rt, i) => (
+                {(spillover?.tickers ?? []).map((rt, i) => (
                   <tr key={rt}>
                     <td style={{ padding: "8px 12px", fontWeight: 700, color: "#58a6ff", fontSize: 12 }}>{rt}</td>
-                    {spillover.matrix[i].map((v, j) => (
+                    {(spillover?.matrix?.[i] ?? []).map((v, j) => (
                       <td key={j} style={{ padding: "8px 10px", textAlign: "center", fontSize: 12, color: i === j ? "#21262d" : v > 0.5 ? "#f85149" : v > 0.3 ? "#e3b341" : "#8b949e", background: i === j ? "#161b22" : `rgba(88,166,255,${v * 0.3})`, border: "1px solid #21262d" }}>{i === j ? "—" : v.toFixed(2)}</td>
                     ))}
                   </tr>
@@ -126,7 +126,7 @@ export default function CrossAssetExplorer() {
             <div style={{ marginBottom: 12 }}>
               <span style={{ fontSize: 12, color: "#8b949e" }}>Nodes: <span style={{ color: "#ffa657" }}>{depGraph.n_nodes}</span> | Edges: <span style={{ color: "#ffa657" }}>{depGraph.n_edges}</span></span>
             </div>
-            {depGraph.nodes.map(n => (
+            {(depGraph?.nodes ?? []).map(n => (
               <div key={n.ticker} style={{ display: "flex", alignItems: "center", gap: 12, padding: "6px 0", borderBottom: "1px solid #21262d" }}>
                 <div style={{ width: 48, fontWeight: 700, color: "#58a6ff", fontSize: 12 }}>{n.ticker}</div>
                 <div style={{ flex: 1, height: 6, background: "#161b22", borderRadius: 3, overflow: "hidden" }}>
@@ -137,7 +137,7 @@ export default function CrossAssetExplorer() {
             ))}
             <div style={{ marginTop: 16 }}>
               <div style={LABEL}>Edges</div>
-              {depGraph.edges.map(e => (
+              {(depGraph?.edges ?? []).map(e => (
                 <div key={`${e.source}-${e.target}`} style={{ fontSize: 11, color: "#8b949e", padding: "3px 0" }}>
                   {e.source} → {e.target}: <span style={{ color: e.weight >= 0 ? "#3fb950" : "#f85149", fontWeight: 700 }}>{e.weight.toFixed(4)}</span>
                 </div>
