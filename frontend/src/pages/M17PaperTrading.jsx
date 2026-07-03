@@ -30,11 +30,16 @@ export default function M17PaperTrading() {
   const [orderForm, setOrderForm] = useState({ ticker:"AAPL", side:"BUY", quantity:100, order_type:"market", limit_price:"" });
   const [msg, setMsg] = useState(null);
   const [err, setErr] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
 
   const load = () => {
-    fetch("/trading/paper/account").then(r=>r.json()).then(setAccount).catch(()=>{});
-    fetch("/trading/paper/positions").then(r=>r.json()).then(d=>setPositions(d.positions||[])).catch(()=>{});
-    fetch("/trading/paper/fills").then(r=>r.json()).then(d=>setFills(d.fills||[])).catch(()=>{});
+    setLoading(true);
+    Promise.all([
+      fetch("/trading/paper/account").then(r=>r.json()).then(setAccount).catch(()=>{}),
+      fetch("/trading/paper/positions").then(r=>r.json()).then(d=>setPositions(d.positions||[])).catch(()=>{}),
+      fetch("/trading/paper/fills").then(r=>r.json()).then(d=>setFills(d.fills||[])).catch(()=>{}),
+    ]).then(() => { setLoading(false); setFetchError(null); }).catch(() => { setFetchError("Unable to connect to the backend"); setLoading(false); });
   };
   useEffect(() => { load(); }, []);
 
@@ -66,6 +71,20 @@ export default function M17PaperTrading() {
     await fetch("/trading/paper/reset", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({}) });
     setMsg("Simulator reset"); load();
   };
+
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+      Loading…
+    </div>
+  );
+
+  if (fetchError && !account) return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 300, gap: 12 }}>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--negative)", letterSpacing: "0.1em" }}>ERROR</div>
+      <div style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--text-3)" }}>Unable to connect to the backend</div>
+      <button onClick={load} style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--accent)", background: "var(--accent)22", border: "1px solid var(--accent)55", borderRadius: 6, padding: "6px 16px", cursor: "pointer" }}>Retry</button>
+    </div>
+  );
 
   return (
     <div style={S.wrap}>

@@ -33,6 +33,8 @@ export default function M18EconomicCalendar() {
     unit: "K jobs",
   });
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [filterCountry, setFilterCountry] = useState("");
   const [filterImportance, setFilterImportance] = useState("");
   const [limit, setLimit] = useState("30");
@@ -40,7 +42,10 @@ export default function M18EconomicCalendar() {
   const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
   const refresh = () => {
-    fetch(`/m18/economic/calendar/upcoming?limit=${limit}`).then(r => r.json()).then(d => setEvents(Array.isArray(d) ? d : [])).catch(() => {});
+    fetch(`/m18/economic/calendar/upcoming?limit=${limit}`)
+      .then(r => r.json())
+      .then(d => { setEvents(Array.isArray(d) ? d : []); setInitialLoading(false); setFetchError(null); })
+      .catch(() => { setFetchError("Unable to connect to the backend"); setInitialLoading(false); });
   };
   useEffect(() => { refresh(); }, [limit]);
 
@@ -67,6 +72,20 @@ export default function M18EconomicCalendar() {
   }, {});
 
   const highCount = filtered.filter(e => e.importance === "HIGH").length;
+
+  if (initialLoading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+      Loading…
+    </div>
+  );
+
+  if (fetchError && events.length === 0) return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 300, gap: 12 }}>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--negative)", letterSpacing: "0.1em" }}>ERROR</div>
+      <div style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--text-3)" }}>Unable to connect to the backend</div>
+      <button onClick={refresh} style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--accent)", background: "var(--accent)22", border: "1px solid var(--accent)55", borderRadius: 6, padding: "6px 16px", cursor: "pointer" }}>Retry</button>
+    </div>
+  );
 
   return (
     <div style={S.wrap}>

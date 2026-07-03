@@ -21,11 +21,17 @@ export default function M18EarningsCalendar() {
   const [estimateForm, setEstimateForm] = useState({ ticker: "META", fiscal_quarter: "Q1 2026", analyst: "Goldman Sachs", eps_estimate: "5.25", revenue_estimate: "42500", rating: "BUY" });
   const [limit, setLimit] = useState("30");
   const [filterTicker, setFilterTicker] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
   const refresh = () => {
-    fetch(`/m18/earnings/calendar/upcoming?limit=${limit}`).then(r => r.json()).then(d => setUpcoming(Array.isArray(d) ? d : [])).catch(() => {});
+    setLoading(true);
+    fetch(`/m18/earnings/calendar/upcoming?limit=${limit}`)
+      .then(r => r.json())
+      .then(d => { setUpcoming(Array.isArray(d) ? d : []); setLoading(false); setError(null); })
+      .catch(() => { setError("Unable to connect to the backend"); setLoading(false); });
   };
   useEffect(() => { refresh(); }, [limit]);
 
@@ -55,6 +61,20 @@ export default function M18EarningsCalendar() {
     acc[date].push(e);
     return acc;
   }, {});
+
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+      Loading…
+    </div>
+  );
+
+  if (error && upcoming.length === 0) return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 300, gap: 12 }}>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--negative)", letterSpacing: "0.1em" }}>ERROR</div>
+      <div style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--text-3)" }}>Unable to connect to the backend</div>
+      <button onClick={refresh} style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--accent)", background: "var(--accent)22", border: "1px solid var(--accent)55", borderRadius: 6, padding: "6px 16px", cursor: "pointer" }}>Retry</button>
+    </div>
+  );
 
   return (
     <div style={S.wrap}>

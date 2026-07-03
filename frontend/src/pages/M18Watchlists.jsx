@@ -23,11 +23,17 @@ export default function M18Watchlists() {
   const [priceForm, setPriceForm] = useState({ ticker: "NVDA", price: "650" });
   const [priceAlerts, setPriceAlerts] = useState([]);
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
   const refresh = () => {
-    fetch("/m18/watchlists").then(r => r.json()).then(d => setLists(Array.isArray(d) ? d : [])).catch(() => {});
-    fetch("/m18/watchlists/stats/summary").then(r => r.json()).then(setStats).catch(() => {});
+    setLoading(true);
+    Promise.all([
+      fetch("/m18/watchlists").then(r => r.json()).then(d => setLists(Array.isArray(d) ? d : [])).catch(() => {}),
+      fetch("/m18/watchlists/stats/summary").then(r => r.json()).then(setStats).catch(() => {}),
+    ]).then(() => { setLoading(false); setError(null); }).catch(() => { setError("Unable to connect to the backend"); setLoading(false); });
   };
   useEffect(() => { refresh(); }, []);
 
@@ -70,6 +76,20 @@ export default function M18Watchlists() {
     refresh();
   };
 
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+      Loading…
+    </div>
+  );
+
+  if (error && lists.length === 0) return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 300, gap: 12 }}>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--negative)", letterSpacing: "0.1em" }}>ERROR</div>
+      <div style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--text-3)" }}>Unable to connect to the backend</div>
+      <button onClick={refresh} style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--accent)", background: "var(--accent)22", border: "1px solid var(--accent)55", borderRadius: 6, padding: "6px 16px", cursor: "pointer" }}>Retry</button>
+    </div>
+  );
+
   return (
     <div style={S.wrap}>
       <div style={S.hdr}>Watchlist System</div>
@@ -99,6 +119,11 @@ export default function M18Watchlists() {
           </div>
           <div style={S.section}>
             <div style={S.sHdr}>My Watchlists ({lists.length})</div>
+            {lists.length === 0 && (
+              <div style={{ textAlign: "center", padding: "40px 20px", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--text-3)" }}>
+                No watchlists yet — use the form above to add entries.
+              </div>
+            )}
             {lists.map(wl => (
               <div key={wl.list_id} style={S.listCard(selected?.list_id === wl.list_id)} onClick={() => loadList(wl.list_id)}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>

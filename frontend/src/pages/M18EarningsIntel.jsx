@@ -25,11 +25,17 @@ export default function M18EarningsIntel() {
   const [signal, setSignal] = useState(null);
   const [releaseForm, setReleaseForm] = useState({ ticker: "AAPL", fiscal_quarter: "Q1 2026", reported_eps: "2.18", consensus_eps: "2.02", reported_revenue: "119600", consensus_revenue: "111200", gross_margin: "0.46", operating_margin: "0.31", guidance_direction: "RAISED" });
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
   const refresh = () => {
-    fetch(`/m18/earnings/releases/${ticker.toUpperCase()}`).then(r => r.json()).then(d => setReleases(Array.isArray(d) ? d : [])).catch(() => {});
-    fetch("/m18/earnings/calendar/upcoming?limit=15").then(r => r.json()).then(d => setCalendar(Array.isArray(d) ? d : [])).catch(() => {});
+    setLoading(true);
+    Promise.all([
+      fetch(`/m18/earnings/releases/${ticker.toUpperCase()}`).then(r => r.json()).then(d => setReleases(Array.isArray(d) ? d : [])).catch(() => {}),
+      fetch("/m18/earnings/calendar/upcoming?limit=15").then(r => r.json()).then(d => setCalendar(Array.isArray(d) ? d : [])).catch(() => {}),
+    ]).then(() => { setLoading(false); setError(null); }).catch(() => { setError("Unable to connect to the backend"); setLoading(false); });
   };
   useEffect(() => { refresh(); }, [ticker]);
 
@@ -52,6 +58,12 @@ export default function M18EarningsIntel() {
     const r = await post("/m18/earnings/signal", { ticker: ticker.toUpperCase(), eps_surprise_pct: 0.08, revenue_surprise_pct: 0.075, guidance_direction: "RAISED" });
     if (r.ok) setSignal(await r.json());
   };
+
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+      Loading…
+    </div>
+  );
 
   return (
     <div style={S.wrap}>

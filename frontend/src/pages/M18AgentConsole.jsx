@@ -46,8 +46,13 @@ export default function M18AgentConsole() {
   const [orchResult, setOrchResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const [agentsLoading, setAgentsLoading] = useState(true);
+
   useEffect(() => {
-    fetch("/m18/agents/list").then(r => r.json()).then(d => setAgents(Array.isArray(d) ? d : [])).catch(() => {});
+    fetch("/m18/agents/list")
+      .then(r => r.json())
+      .then(d => { setAgents(Array.isArray(d) ? d : []); setAgentsLoading(false); })
+      .catch(() => { setAgentsLoading(false); });
   }, []);
 
   const runAgent = async (type) => {
@@ -85,6 +90,11 @@ export default function M18AgentConsole() {
         <span style={{ fontSize: 11, color: "#8b949e" }}>Runs all 9 specialist agents + Report Generator</span>
       </div>
 
+      {agentsLoading && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 120, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+          Loading agents…
+        </div>
+      )}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 16 }}>
         {AGENTS.map(a => (
           <div key={a.type} style={S.agentCard(a.color)} onClick={() => runAgent(a.type)}>

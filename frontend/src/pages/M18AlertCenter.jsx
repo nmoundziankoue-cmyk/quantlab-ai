@@ -29,15 +29,20 @@ export default function M18AlertCenter() {
   const [evalForm, setEvalForm] = useState({ ticker: "AAPL", field: "price", value: "185" });
   const [fireResult, setFireResult] = useState([]);
   const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
-  const refresh = () => {
-    fetch("/m18/alerts/stats").then(r => r.json()).then(setStats).catch(() => {});
-    fetch("/m18/alerts/rules").then(r => r.json()).then(d => setRules(Array.isArray(d) ? d : [])).catch(() => {});
-    fetch("/m18/alerts/history?limit=30").then(r => r.json()).then(d => setHistory(Array.isArray(d) ? d : [])).catch(() => {});
+  const refresh = (isInitial = false) => {
+    if (isInitial) setLoading(true);
+    Promise.all([
+      fetch("/m18/alerts/stats").then(r => r.json()).then(setStats).catch(() => {}),
+      fetch("/m18/alerts/rules").then(r => r.json()).then(d => setRules(Array.isArray(d) ? d : [])).catch(() => {}),
+      fetch("/m18/alerts/history?limit=30").then(r => r.json()).then(d => setHistory(Array.isArray(d) ? d : [])).catch(() => {}),
+    ]).then(() => { setLoading(false); setError(null); }).catch(() => { setError("Unable to connect to the backend"); setLoading(false); });
   };
-  useEffect(() => { refresh(); const t = setInterval(refresh, 5000); return () => clearInterval(t); }, []);
+  useEffect(() => { refresh(true); const t = setInterval(() => refresh(false), 5000); return () => clearInterval(t); }, []);
 
   const addRule = async () => {
     const r = await post("/m18/alerts/rules", { ...form, threshold: parseFloat(form.threshold) });
@@ -48,6 +53,20 @@ export default function M18AlertCenter() {
     const r = await post("/m18/alerts/evaluate", { ...evalForm, value: parseFloat(evalForm.value) });
     if (r.ok) { const d = await r.json(); setFireResult(d); refresh(); } else setFireResult([]);
   };
+
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+      Loading…
+    </div>
+  );
+
+  if (error && !stats && rules.length === 0) return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 300, gap: 12 }}>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--negative)", letterSpacing: "0.1em" }}>ERROR</div>
+      <div style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--text-3)" }}>Unable to connect to the backend</div>
+      <button onClick={() => refresh(true)} style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--accent)", background: "var(--accent)22", border: "1px solid var(--accent)55", borderRadius: 6, padding: "6px 16px", cursor: "pointer" }}>Retry</button>
+    </div>
+  );
 
   return (
     <div style={S.wrap}>

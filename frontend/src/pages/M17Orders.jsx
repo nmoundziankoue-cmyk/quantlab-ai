@@ -30,6 +30,8 @@ export default function M17Orders() {
   const [msg, setMsg] = useState(null);
   const [err, setErr] = useState(null);
   const [tab, setTab] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
 
   const loadAll = async () => {
     const params = new URLSearchParams();
@@ -50,7 +52,12 @@ export default function M17Orders() {
     if (r.ok) setSummary(await r.json());
   };
 
-  useEffect(() => { loadAll(); loadOpen(); loadSummary(); }, []);
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([loadAll(), loadOpen(), loadSummary()])
+      .then(() => { setLoading(false); setFetchError(null); })
+      .catch(() => { setFetchError("Unable to connect to the backend"); setLoading(false); });
+  }, []);
 
   const cancelOrder = async () => {
     setMsg(null); setErr(null);
@@ -71,6 +78,20 @@ export default function M17Orders() {
       <td style={S.td}><span style={{ background:(STATUS_COLORS[o.status]||"#8b949e")+"22", color:STATUS_COLORS[o.status]||"#8b949e", padding:"2px 6px", borderRadius:4, fontSize:10, fontWeight:700 }}>{o.status}</span></td>
       <td style={S.td}>{o.avg_fill_price ? `$${Number(o.avg_fill_price).toFixed(2)}` : "—"}</td>
     </tr>
+  );
+
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+      Loading…
+    </div>
+  );
+
+  if (fetchError && orders.length === 0 && openOrders.length === 0) return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 300, gap: 12 }}>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--negative)", letterSpacing: "0.1em" }}>ERROR</div>
+      <div style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--text-3)" }}>Unable to connect to the backend</div>
+      <button onClick={() => { setLoading(true); Promise.all([loadAll(), loadOpen(), loadSummary()]).finally(() => setLoading(false)); }} style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--accent)", background: "var(--accent)22", border: "1px solid var(--accent)55", borderRadius: 6, padding: "6px 16px", cursor: "pointer" }}>Retry</button>
+    </div>
   );
 
   return (

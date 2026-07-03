@@ -20,9 +20,10 @@ export default function M17TradeBlotter() {
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [loading, setLoading] = useState(true);
 
   const load = () =>
-    fetch("/trading/orders").then(r => r.json()).then(d => setOrders(d.orders || [])).catch(() => {});
+    fetch("/trading/orders").then(r => r.json()).then(d => { setOrders(d.orders || []); setLoading(false); }).catch(() => { setLoading(false); });
 
   useEffect(() => { load(); const id = setInterval(load, 5000); return () => clearInterval(id); }, []);
 
@@ -36,6 +37,12 @@ export default function M17TradeBlotter() {
     acc[o.status] = (acc[o.status] || 0) + 1;
     return acc;
   }, {});
+
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+      Loading…
+    </div>
+  );
 
   return (
     <div style={S.wrap}>

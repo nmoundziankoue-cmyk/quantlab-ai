@@ -23,11 +23,17 @@ export default function M18YieldCurve() {
   const [country, setCountry] = useState("US");
   const [rates, setRates] = useState(DEFAULT_RATES);
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
   const refresh = () => {
-    fetch(`/m18/economic/yield-curve/${country}`).then(r => r.json()).then(setCurve).catch(() => {});
-    fetch(`/m18/economic/yield-curve/history?country=${country}&limit=20`).then(r => r.json()).then(d => setHistory(Array.isArray(d) ? d : [])).catch(() => {});
+    setLoading(true);
+    Promise.all([
+      fetch(`/m18/economic/yield-curve/${country}`).then(r => r.json()).then(setCurve).catch(() => {}),
+      fetch(`/m18/economic/yield-curve/history?country=${country}&limit=20`).then(r => r.json()).then(d => setHistory(Array.isArray(d) ? d : [])).catch(() => {}),
+    ]).then(() => { setLoading(false); setError(null); }).catch(() => { setError("Unable to connect to the backend"); setLoading(false); });
   };
   useEffect(() => { refresh(); }, [country]);
 
@@ -44,6 +50,12 @@ export default function M18YieldCurve() {
   };
 
   const maxRate = Math.max(...Object.values(rates).map(Number));
+
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+      Loading…
+    </div>
+  );
 
   return (
     <div style={S.wrap}>
@@ -113,9 +125,13 @@ export default function M18YieldCurve() {
         </div>
       </div>
 
-      {history.length > 0 && (
-        <div style={S.section}>
-          <div style={S.sHdr}>Snapshot History ({history.length})</div>
+      <div style={S.section}>
+        <div style={S.sHdr}>Snapshot History ({history.length})</div>
+        {history.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "40px 20px", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--text-3)" }}>
+            No snapshots recorded — use the form above to record a yield curve snapshot.
+          </div>
+        ) : (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
             <thead><tr>{["Timestamp","Country","Inverted","Slope","2Y","10Y","30Y"].map(h => <th key={h} style={{ color: "#8b949e", textAlign: "left", padding: "4px 8px", borderBottom: "1px solid #21262d" }}>{h}</th>)}</tr></thead>
             <tbody>
@@ -132,8 +148,8 @@ export default function M18YieldCurve() {
               ))}
             </tbody>
           </table>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -32,11 +32,17 @@ export default function M18NewsIntel() {
   const [form, setForm] = useState({ headline: "Apple reports record quarterly revenue, beats estimates by 8%", body: "Apple Inc. reported quarterly revenue of $119.6B, surpassing analyst consensus by 8%. EPS of $2.18 beat expectations. CEO Tim Cook raised guidance citing strong iPhone 16 demand.", source: "Reuters" });
   const [tickerInput, setTickerInput] = useState("AAPL");
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
   const refresh = () => {
-    fetch("/m18/news/stats").then(r => r.json()).then(setStats).catch(() => {});
-    fetch("/m18/news/articles/latest?limit=10").then(r => r.json()).then(d => setLatest(Array.isArray(d) ? d : [])).catch(() => {});
+    setLoading(true);
+    Promise.all([
+      fetch("/m18/news/stats").then(r => r.json()).then(setStats).catch(() => {}),
+      fetch("/m18/news/articles/latest?limit=10").then(r => r.json()).then(d => setLatest(Array.isArray(d) ? d : [])).catch(() => {}),
+    ]).then(() => { setLoading(false); setError(null); }).catch(() => { setError("Unable to connect to the backend"); setLoading(false); });
   };
   useEffect(() => { refresh(); }, []);
 
@@ -59,6 +65,20 @@ export default function M18NewsIntel() {
     const r = await fetch(`/m18/news/signal/${tickerInput.toUpperCase()}`);
     if (r.ok) setSignal(await r.json());
   };
+
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+      Loading…
+    </div>
+  );
+
+  if (error && !stats && latest.length === 0) return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 300, gap: 12 }}>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--negative)", letterSpacing: "0.1em" }}>ERROR</div>
+      <div style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--text-3)" }}>Unable to connect to the backend</div>
+      <button onClick={refresh} style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--accent)", background: "var(--accent)22", border: "1px solid var(--accent)55", borderRadius: 6, padding: "6px 16px", cursor: "pointer" }}>Retry</button>
+    </div>
+  );
 
   return (
     <div style={S.wrap}>

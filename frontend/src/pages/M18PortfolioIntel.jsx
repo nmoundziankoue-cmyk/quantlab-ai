@@ -23,12 +23,18 @@ export default function M18PortfolioIntel() {
   const [nav, setNav] = useState("10000000");
   const [holdingForm, setHoldingForm] = useState({ ticker: "AAPL", weight: "0.20", sector: "Technology", expected_return: "0.12", volatility: "0.22", cost_basis: "150.00", current_price: "175.50", quantity: "1143" });
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
   const refresh = () => {
-    fetch("/m18/portfolio-intel/summary").then(r => r.json()).then(setSummary).catch(() => {});
-    fetch("/m18/portfolio-intel/score").then(r => r.json()).then(setScore).catch(() => {});
-    fetch("/m18/portfolio-intel/holdings").then(r => r.json()).then(d => setHoldings(Array.isArray(d) ? d : [])).catch(() => {});
+    setLoading(true);
+    Promise.all([
+      fetch("/m18/portfolio-intel/summary").then(r => r.json()).then(setSummary).catch(() => {}),
+      fetch("/m18/portfolio-intel/score").then(r => r.json()).then(setScore).catch(() => {}),
+      fetch("/m18/portfolio-intel/holdings").then(r => r.json()).then(d => setHoldings(Array.isArray(d) ? d : [])).catch(() => {}),
+    ]).then(() => { setLoading(false); setError(null); }).catch(() => { setError("Unable to connect to the backend"); setLoading(false); });
   };
   useEffect(() => { refresh(); }, []);
 
@@ -60,6 +66,20 @@ export default function M18PortfolioIntel() {
   const addObs = async () => {
     await post("/m18/portfolio-intel/returns", { portfolio_return: 0.003 + (Math.random() - 0.5) * 0.01, benchmark_return: 0.002 });
   };
+
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+      Loading…
+    </div>
+  );
+
+  if (error && !summary && holdings.length === 0) return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 300, gap: 12 }}>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--negative)", letterSpacing: "0.1em" }}>ERROR</div>
+      <div style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--text-3)" }}>Unable to connect to the backend</div>
+      <button onClick={refresh} style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--accent)", background: "var(--accent)22", border: "1px solid var(--accent)55", borderRadius: 6, padding: "6px 16px", cursor: "pointer" }}>Retry</button>
+    </div>
+  );
 
   return (
     <div style={S.wrap}>
