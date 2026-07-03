@@ -1,6 +1,6 @@
 # QuantLab AI
 
-Institutional-grade quantitative portfolio analytics platform built milestone-by-milestone in pure Python (no scipy / numpy / pandas).
+Institutional-grade quantitative portfolio analytics platform built milestone-by-milestone in pure Python (no scipy / numpy / pandas for the quant core).
 
 ---
 
@@ -29,55 +29,106 @@ Institutional-grade quantitative portfolio analytics platform built milestone-by
 | Frontend | React 18, React Router v6, Vite, Recharts |
 | Containers | Docker, Docker Compose |
 
-**Pure-Python constraint:** all quantitative math (matrix inversion, Pearson correlation, option pricing, OLS regression) is implemented from scratch — zero C-extension scientific libraries.
-
 ---
 
-## How to Run Locally
+## Quick Start (Docker — recommended)
 
 ### Prerequisites
 
-- Docker and Docker Compose
-- Node.js 18+ (for frontend development only)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and **running**
+- Git
 
-### Docker (recommended)
+### 1. Clone
 
 ```bash
-git clone <repo>
-cd apexquant-v25
-
-# Copy and configure environment variables
-cp backend/.env.example backend/.env
-# Edit backend/.env: set DATABASE_URL, JWT_SECRET_KEY
-
-# Start all services (backend + frontend + PostgreSQL + Redis)
-docker compose up --build
+git clone https://github.com/nmoundziankoue-cmyk/quantlab-ai.git
+cd quantlab-ai
 ```
 
-The API will be available at `http://localhost:8000` and the frontend at `http://localhost:3000`.
-
-### Development without Docker
+### 2. Configure environment variables
 
 ```bash
-# Backend
+cp backend/.env.example backend/.env
+```
+
+Open `backend/.env` and replace `JWT_SECRET_KEY` with a real secret (the app **will not start** without this):
+
+```bash
+# Generate a secure key:
+python -c "import secrets; print(secrets.token_hex(32))"
+# Paste the output as the value of JWT_SECRET_KEY in backend/.env
+```
+
+### 3. Start everything
+
+```bash
+# Start PostgreSQL + Redis only (fast, for dev mode below)
+docker compose up -d
+
+# OR start the full stack (PostgreSQL + Redis + backend + frontend via nginx)
+docker compose --profile full up --build
+```
+
+### 4. Run database migrations
+
+```bash
+# With Docker DB running, apply Alembic migrations:
+docker exec apexquant_backend alembic upgrade head
+# OR locally (if running backend outside Docker):
+cd backend && .venv/bin/python -m alembic upgrade head
+```
+
+### 5. Open in browser
+
+| Service | URL |
+|---|---|
+| **Frontend** | http://localhost (Docker full) or http://localhost:5173 (dev) |
+| **Swagger UI** | http://localhost:8001/docs |
+| **API backend** | http://localhost:8001 |
+
+---
+
+## Development Mode (without Docker frontend)
+
+Run PostgreSQL + Redis via Docker, then run backend and frontend locally:
+
+```bash
+# Terminal 1 — start DB + cache
+docker compose up -d
+
+# Terminal 2 — backend (from repo root)
 cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env       # fill in DATABASE_URL
-alembic upgrade head
-uvicorn main:app --reload  # http://localhost:8000
+cp .env.example .env        # then edit .env: set JWT_SECRET_KEY
+python -m alembic upgrade head
+uvicorn main:app --reload --port 8001
 
-# Frontend (separate terminal)
+# Terminal 3 — frontend
 cd frontend
 npm install
-npm run dev                # http://localhost:5173
+npm run dev                  # http://localhost:5173
 ```
+
+---
+
+## Environment Variables
+
+Copy `backend/.env.example` to `backend/.env` before starting. Required values:
+
+| Variable | Required | Description |
+|---|---|---|
+| `JWT_SECRET_KEY` | **Yes** | 32-byte hex — generate with `python -c "import secrets; print(secrets.token_hex(32))"` |
+| `DATABASE_URL` | Yes for auth/portfolio | PostgreSQL connection string |
+| `REDIS_URL` | No | Redis (falls back to in-memory if empty) |
+| `CORS_ORIGINS` | No | Comma-separated origins for production (empty = localhost dev) |
+| `ENVIRONMENT` | No | `development` (default) or `production` |
 
 ---
 
 ## API Documentation
 
-Interactive Swagger UI available at `http://localhost:8000/docs` once running.
+Interactive Swagger UI at `http://localhost:8001/docs` once running.
 
 Key prefixes:
 
@@ -96,9 +147,11 @@ Key prefixes:
 ## Project Structure
 
 ```
-apexquant-v25/
+quantlab-ai/
 ├── backend/
 │   ├── main.py              FastAPI app entry point
+│   ├── requirements.txt     Pinned Python dependencies (pip freeze)
+│   ├── .env.example         Environment variable template
 │   ├── services/            Business logic (40+ service modules)
 │   ├── routers/             REST API endpoints
 │   ├── schemas/             Pydantic v2 request/response models
@@ -111,7 +164,7 @@ apexquant-v25/
 │   │   ├── api/             API client modules
 │   │   └── hooks/           Custom React hooks
 │   └── vite.config.js
-├── docker-compose.yml
+├── docker-compose.yml       PostgreSQL + Redis (plain) / full stack (--profile full)
 ├── ARCHITECTURE.md          Full architecture documentation
 └── README.md                This file
 ```
@@ -139,20 +192,17 @@ apexquant-v25/
 ```bash
 cd backend
 python -m pytest -q
-# Expected: ~4,660 passed, 15 failed (DB tests), 332 errors (PostgreSQL not running)
+# Expected: ~4,660 passed, 15 failed (DB tests require PostgreSQL), 332 errors (PostgreSQL not running)
 ```
 
 All 332 collection errors are `sqlalchemy.exc.OperationalError: connection refused port 5432` — expected without a running PostgreSQL. Zero code errors.
 
 ---
 
-## Environment Variables
+## Security
 
-See [backend/.env.example](backend/.env.example) for the full list. Required for production:
-
-- `DATABASE_URL` — PostgreSQL connection string
-- `JWT_SECRET_KEY` — 32-byte random hex string (`python -c "import secrets; print(secrets.token_hex(32))"`)
-
-Optional:
-- `REDIS_URL` — Redis connection (falls back to in-memory if not set)
-- `CORS_ORIGINS` — Comma-separated allowed origins (empty = localhost dev mode)
+- `JWT_SECRET_KEY` has **no hardcoded default** — the app refuses to start without an explicit value set in `.env`
+- `.env` is in `.gitignore` and has never been committed
+- All secrets must be set via environment variables or `backend/.env` (never committed)
+- CORS: open in dev mode (`ENVIRONMENT=development`), restricted to `CORS_ORIGINS` in production
+- Auth endpoints use bcrypt password hashing and TOTP MFA

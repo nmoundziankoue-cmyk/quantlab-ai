@@ -1,6 +1,7 @@
 """Application settings loaded from environment variables or .env file."""
 from __future__ import annotations
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -48,7 +49,7 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------ #
     # Security & Auth                                                      #
     # ------------------------------------------------------------------ #
-    jwt_secret_key: str = "apexquant-m7-jwt-secret-key-institutional-grade"
+    jwt_secret_key: str = "CHANGE_ME_run_python_-c_import_secrets_print_secrets_token_hex_32"
     access_token_expire_hours: int = 24
     refresh_token_expire_days: int = 30
 
@@ -67,6 +68,18 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------ #
     api_title: str = "QuantLab AI — Portfolio Engine"
     api_version: str = "2.0.0"
+
+
+    @model_validator(mode="after")
+    def _require_jwt_secret(self) -> "Settings":
+        if self.jwt_secret_key.startswith("CHANGE_ME"):
+            raise ValueError(
+                "JWT_SECRET_KEY is not configured.\n"
+                "Generate a secure key and add it to backend/.env:\n"
+                '  python -c "import secrets; print(secrets.token_hex(32))"\n'
+                "Then set: JWT_SECRET_KEY=<generated_value>"
+            )
+        return self
 
 
 settings = Settings()
