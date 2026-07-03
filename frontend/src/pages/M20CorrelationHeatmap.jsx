@@ -2,15 +2,17 @@ import { useState, useEffect } from "react";
 
 const API = "/quant/m20";
 
-function getColor(corr) {
-  if (corr === null) return "#1e293b";
+// Maps correlation [-1, +1] onto a dark-palette-aware green↔red ramp
+function cellColor(corr) {
+  if (corr === null) return "#232A3D";
   const v = Math.max(-1, Math.min(1, corr));
   if (v >= 0) {
-    const g = Math.round(v * 255);
-    return `rgb(${255 - g}, ${255}, ${255 - g})`;
+    // 0 → panel, 1 → positive green at 60% opacity
+    const alpha = Math.round(v * 180).toString(16).padStart(2, "0");
+    return `#27C784${alpha}`;
   }
-  const g = Math.round(-v * 255);
-  return `rgb(${255}, ${255 - g}, ${255 - g})`;
+  const alpha = Math.round(-v * 180).toString(16).padStart(2, "0");
+  return `#E5473E${alpha}`;
 }
 
 function makeDefaultReturns(n, drift) {
@@ -23,17 +25,17 @@ function makeDefaultReturns(n, drift) {
 }
 
 const DEFAULT_TICKERS = [
-  { name: "AAPL", drift: 0.001 },
-  { name: "MSFT", drift: 0.0009 },
-  { name: "GOOGL", drift: 0.0008 },
-  { name: "AMZN", drift: -0.0003 },
+  { name: "AAPL",  drift:  0.001  },
+  { name: "MSFT",  drift:  0.0009 },
+  { name: "GOOGL", drift:  0.0008 },
+  { name: "AMZN",  drift: -0.0003 },
 ];
 
 export default function M20CorrelationHeatmap() {
-  const [matrix, setMatrix] = useState(null);
+  const [matrix, setMatrix]   = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [n, setN] = useState(120);
+  const [error, setError]     = useState("");
+  const [n, setN]             = useState(120);
 
   async function computeMatrix() {
     setLoading(true);
@@ -49,7 +51,6 @@ export default function M20CorrelationHeatmap() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ entries }),
       });
-
       const resp = await fetch(`${API}/correlation/matrix`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -64,22 +65,25 @@ export default function M20CorrelationHeatmap() {
     }
   }
 
-  // Auto-run on mount with default tickers and n=120
   useEffect(() => { computeMatrix(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div style={{ maxWidth: 780, margin: "0 auto", padding: "2rem 1rem" }}>
-      <h1 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.25rem" }}>
-        Correlation Heatmap
-      </h1>
-      <p style={{ color: "#64748b", marginBottom: "1.5rem", fontSize: "0.9rem" }}>
-        Pearson N×N correlation matrix. Green = positive, Red = negative.
-      </p>
-
-      <div style={{ display: "flex", gap: "1rem", alignItems: "flex-end", marginBottom: "1.5rem" }}>
+    <div style={S.root}>
+      {/* Header */}
+      <div style={S.pageHeader}>
         <div>
-          <label style={{ display: "block", fontSize: "0.8rem", color: "#94a3b8", marginBottom: 4 }}>
-            Observations per ticker: {n}
+          <h1 style={S.h1}>Correlation Heatmap</h1>
+          <p style={S.h1Sub}>
+            N×N Pearson matrix · 120 observations · green = positive · red = negative
+          </p>
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div style={S.controls}>
+        <div style={S.controlGroup}>
+          <label className="ql-label">
+            Observations per ticker: <span className="ql-value" style={{ color: "#E2A52B" }}>{n}</span>
           </label>
           <input
             type="range"
@@ -88,78 +92,146 @@ export default function M20CorrelationHeatmap() {
             step={10}
             value={n}
             onChange={(e) => setN(Number(e.target.value))}
-            style={{ width: 200 }}
+            style={{ width: 180, accentColor: "#567EFF" }}
           />
         </div>
-        <button
-          onClick={computeMatrix}
-          disabled={loading}
-          style={{
-            padding: "0.55rem 1.25rem",
-            borderRadius: 6,
-            background: "#0ea5e9",
-            color: "#fff",
-            border: "none",
-            cursor: loading ? "not-allowed" : "pointer",
-            fontWeight: 600,
-            opacity: loading ? 0.6 : 1,
-          }}
-        >
-          {loading ? "Computing…" : "Compute Matrix"}
+        <button onClick={computeMatrix} disabled={loading} style={S.btn}>
+          {loading ? "Computing…" : "Recompute"}
         </button>
       </div>
 
-      {error && (
-        <div style={{ background: "#450a0a", color: "#fca5a5", padding: "0.75rem 1rem", borderRadius: 6, marginBottom: "1rem", fontSize: "0.85rem" }}>
-          {error}
-        </div>
-      )}
+      {error && <div style={S.errorBox}>{error}</div>}
 
       {matrix && (
         <>
-          <div style={{ marginBottom: "1rem", fontSize: "0.85rem", color: "#64748b" }}>
-            Observations: {matrix.num_observations} · Min: {matrix.min_correlation.toFixed(3)} · Max: {matrix.max_correlation.toFixed(3)} · Avg |corr|: {matrix.avg_correlation.toFixed(3)}
+          {/* Stats strip */}
+          <div style={S.statsRow}>
+            {[
+              { label: "Observations", value: matrix.num_observations },
+              { label: "Min corr",     value: matrix.min_correlation.toFixed(3) },
+              { label: "Max corr",     value: matrix.max_correlation.toFixed(3) },
+              { label: "Avg |corr|",   value: matrix.avg_correlation.toFixed(3) },
+              { label: "Tickers",      value: matrix.tickers.join(" · ") },
+            ].map((s) => (
+              <div key={s.label} style={S.statCell}>
+                <div className="ql-label" style={{ marginBottom: 4 }}>{s.label}</div>
+                <div className="ql-value" style={{ fontSize: 15, fontWeight: 600, color: "#E2A52B" }}>{s.value}</div>
+              </div>
+            ))}
           </div>
 
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ borderCollapse: "collapse", fontSize: "0.85rem" }}>
-              <thead>
-                <tr>
-                  <th style={{ padding: "0.4rem 0.75rem", color: "#64748b" }}></th>
-                  {matrix.tickers.map((t) => (
-                    <th key={t} style={{ padding: "0.4rem 0.75rem", color: "#94a3b8", fontWeight: 600, minWidth: 80 }}>
-                      {t}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {matrix.tickers.map((rowTicker, i) => (
-                  <tr key={rowTicker}>
-                    <td style={{ padding: "0.4rem 0.75rem", color: "#94a3b8", fontWeight: 600 }}>{rowTicker}</td>
-                    {matrix.values[i].map((corr, j) => (
-                      <td
-                        key={j}
-                        title={`${rowTicker} vs ${matrix.tickers[j]}: ${corr.toFixed(4)}`}
-                        style={{
-                          padding: "0.5rem 0.75rem",
-                          background: getColor(corr),
-                          color: "#000",
-                          textAlign: "center",
-                          fontWeight: i === j ? 700 : 400,
-                          fontSize: "0.82rem",
-                        }}
-                      >
-                        {corr.toFixed(3)}
-                      </td>
+          {/* Heatmap */}
+          <div style={S.panel}>
+            <div style={S.panelTitle}>Pearson Correlation Matrix</div>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ borderCollapse: "collapse", fontFamily: "var(--font-mono)" }}>
+                <thead>
+                  <tr>
+                    <th style={{ padding: "6px 14px", textAlign: "right", color: "#454D66", fontSize: 10 }}></th>
+                    {matrix.tickers.map((t) => (
+                      <th key={t} style={{ padding: "6px 14px", color: "#7A84A0", fontSize: 11, fontWeight: 600, minWidth: 90, textAlign: "center" }}>
+                        {t}
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {matrix.tickers.map((rowTicker, i) => (
+                    <tr key={rowTicker}>
+                      <td style={{ padding: "6px 14px", color: "#7A84A0", fontWeight: 600, fontSize: 11, textAlign: "right", whiteSpace: "nowrap" }}>
+                        {rowTicker}
+                      </td>
+                      {matrix.values[i].map((corr, j) => {
+                        const isDiag = i === j;
+                        return (
+                          <td
+                            key={j}
+                            title={`${rowTicker} vs ${matrix.tickers[j]}: ${corr.toFixed(4)}`}
+                            style={{
+                              padding: "10px 14px",
+                              background: cellColor(isDiag ? 1 : corr),
+                              textAlign: "center",
+                              fontSize: 12,
+                              fontWeight: isDiag ? 700 : 500,
+                              color: isDiag ? "#DDE2EE" : Math.abs(corr) > 0.4 ? "#DDE2EE" : "#7A84A0",
+                              borderRadius: 3,
+                              cursor: "default",
+                              transition: "opacity 0.1s",
+                            }}
+                          >
+                            {corr.toFixed(3)}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Legend */}
+            <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "#E5473E" }}>−1.0</span>
+              <div style={{
+                flex: 1, maxWidth: 200, height: 4, borderRadius: 2,
+                background: "linear-gradient(to right, #E5473E88, #232A3D, #27C78488)",
+              }} />
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "#27C784" }}>+1.0</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "#454D66", marginLeft: 12 }}>
+                Pearson r · {n} observations
+              </span>
+            </div>
           </div>
         </>
       )}
     </div>
   );
 }
+
+const S = {
+  root:       { padding: "28px 32px", maxWidth: 820 },
+  pageHeader: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 },
+  h1:         { fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 700, color: "#DDE2EE", margin: "0 0 6px" },
+  h1Sub:      { fontFamily: "var(--font-mono)", fontSize: 10, color: "#454D66", margin: 0, letterSpacing: "0.03em" },
+  controls:   { display: "flex", gap: 16, alignItems: "flex-end", marginBottom: 20 },
+  controlGroup: { display: "flex", flexDirection: "column", gap: 4 },
+  btn: {
+    padding: "8px 20px",
+    borderRadius: 6,
+    background: "#567EFF",
+    color: "#fff",
+    border: "none",
+    fontFamily: "var(--font-display)",
+    fontWeight: 600,
+    fontSize: 13,
+    cursor: "pointer",
+  },
+  errorBox: {
+    background: "#E5473E18",
+    border: "1px solid #E5473E44",
+    color: "#E5473E",
+    padding: "10px 14px",
+    borderRadius: 6,
+    marginBottom: 16,
+    fontFamily: "var(--font-mono)",
+    fontSize: 12,
+  },
+  statsRow: { display: "flex", gap: 10, marginBottom: 14, flexWrap: "wrap" },
+  statCell: { background: "#131720", border: "1px solid #232A3D", borderRadius: 7, padding: "12px 16px", minWidth: 100 },
+  panel: {
+    background: "#131720",
+    border: "1px solid #232A3D",
+    borderRadius: 7,
+    padding: "16px 18px",
+    marginBottom: 12,
+  },
+  panelTitle: {
+    fontFamily: "var(--font-display)",
+    fontSize: 10,
+    fontWeight: 700,
+    color: "#567EFF",
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+    marginBottom: 14,
+  },
+};
