@@ -129,7 +129,7 @@ export default function Screeners() {
                   </tr>
                 </thead>
                 <tbody>
-                  {runResult.results.map((item) => (
+                  {(runResult.results ?? []).map((item) => (
                     <tr key={item.ticker}>
                       <td style={S.td}>{item.rank}</td>
                       <td style={{ ...S.td, fontWeight: 700, color: "#58a6ff" }}>{item.ticker}</td>

@@ -31,7 +31,7 @@ export default function M18StreamingMonitor() {
 
   const refresh = () => {
     fetch("/m18/streaming/metrics").then(r => r.json()).then(setMetrics).catch(() => {});
-    fetch(`/m18/streaming/history/${selType}?limit=20`).then(r => r.json()).then(setHistory).catch(() => {});
+    fetch(`/m18/streaming/history/${selType}?limit=20`).then(r => r.json()).then(d => setHistory(Array.isArray(d) ? d : [])).catch(() => {});
   };
 
   useEffect(() => { refresh(); const t = setInterval(refresh, 3000); return () => clearInterval(t); }, [selType]);

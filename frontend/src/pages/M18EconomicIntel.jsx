@@ -31,7 +31,7 @@ export default function M18EconomicIntel() {
   const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
   const refresh = () => {
-    fetch(`/m18/economic/indicators?country=${country}`).then(r => r.json()).then(setIndicators).catch(() => {});
+    fetch(`/m18/economic/indicators?country=${country}`).then(r => r.json()).then(d => setIndicators(Array.isArray(d) ? d : [])).catch(() => {});
   };
   useEffect(() => { refresh(); }, [country]);
 

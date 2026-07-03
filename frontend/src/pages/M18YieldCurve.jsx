@@ -27,7 +27,7 @@ export default function M18YieldCurve() {
 
   const refresh = () => {
     fetch(`/m18/economic/yield-curve/${country}`).then(r => r.json()).then(setCurve).catch(() => {});
-    fetch(`/m18/economic/yield-curve/history?country=${country}&limit=20`).then(r => r.json()).then(setHistory).catch(() => {});
+    fetch(`/m18/economic/yield-curve/history?country=${country}&limit=20`).then(r => r.json()).then(d => setHistory(Array.isArray(d) ? d : [])).catch(() => {});
   };
   useEffect(() => { refresh(); }, [country]);
 

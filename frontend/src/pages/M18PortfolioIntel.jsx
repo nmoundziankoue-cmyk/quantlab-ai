@@ -28,7 +28,7 @@ export default function M18PortfolioIntel() {
   const refresh = () => {
     fetch("/m18/portfolio-intel/summary").then(r => r.json()).then(setSummary).catch(() => {});
     fetch("/m18/portfolio-intel/score").then(r => r.json()).then(setScore).catch(() => {});
-    fetch("/m18/portfolio-intel/holdings").then(r => r.json()).then(setHoldings).catch(() => {});
+    fetch("/m18/portfolio-intel/holdings").then(r => r.json()).then(d => setHoldings(Array.isArray(d) ? d : [])).catch(() => {});
   };
   useEffect(() => { refresh(); }, []);
 

@@ -25,7 +25,7 @@ export default function M18EarningsCalendar() {
   const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
   const refresh = () => {
-    fetch(`/m18/earnings/calendar/upcoming?limit=${limit}`).then(r => r.json()).then(setUpcoming).catch(() => {});
+    fetch(`/m18/earnings/calendar/upcoming?limit=${limit}`).then(r => r.json()).then(d => setUpcoming(Array.isArray(d) ? d : [])).catch(() => {});
   };
   useEffect(() => { refresh(); }, [limit]);
 

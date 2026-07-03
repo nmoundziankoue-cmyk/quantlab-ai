@@ -150,7 +150,7 @@ export default function M20StrategyComparison() {
                   </tr>
                 </thead>
                 <tbody>
-                  {result.ranked_table.map((row) => {
+                  {(result.ranked_table ?? []).map((row) => {
                     const isTop = row.rank === 1;
                     return (
                       <tr key={row.strategy_id} style={{ background: isTop ? "#27C78410" : "transparent" }}>

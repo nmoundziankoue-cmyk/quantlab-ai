@@ -139,7 +139,7 @@ export default function StrategyBuilder() {
                     {["Type","Action","Strike","Premium"].map(h => <th key={h} style={{ textAlign: "left", padding: "6px 10px", color: "#8b949e", fontWeight: 500 }}>{h}</th>)}
                   </tr></thead>
                   <tbody>
-                    {result.legs.map((l, i) => (
+                    {(result.legs ?? []).map((l, i) => (
                       <tr key={i} style={{ borderBottom: "1px solid #21262d" }}>
                         <td style={{ padding: "8px 10px" }}>{l.type}</td>
                         <td style={{ padding: "8px 10px", color: l.action === "buy" ? "#3fb950" : "#f85149" }}>{l.action}</td>

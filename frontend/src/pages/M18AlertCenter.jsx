@@ -34,8 +34,8 @@ export default function M18AlertCenter() {
 
   const refresh = () => {
     fetch("/m18/alerts/stats").then(r => r.json()).then(setStats).catch(() => {});
-    fetch("/m18/alerts/rules").then(r => r.json()).then(setRules).catch(() => {});
-    fetch("/m18/alerts/history?limit=30").then(r => r.json()).then(setHistory).catch(() => {});
+    fetch("/m18/alerts/rules").then(r => r.json()).then(d => setRules(Array.isArray(d) ? d : [])).catch(() => {});
+    fetch("/m18/alerts/history?limit=30").then(r => r.json()).then(d => setHistory(Array.isArray(d) ? d : [])).catch(() => {});
   };
   useEffect(() => { refresh(); const t = setInterval(refresh, 5000); return () => clearInterval(t); }, []);
 

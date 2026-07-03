@@ -26,7 +26,7 @@ export default function M18Watchlists() {
   const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
   const refresh = () => {
-    fetch("/m18/watchlists").then(r => r.json()).then(setLists).catch(() => {});
+    fetch("/m18/watchlists").then(r => r.json()).then(d => setLists(Array.isArray(d) ? d : [])).catch(() => {});
     fetch("/m18/watchlists/stats/summary").then(r => r.json()).then(setStats).catch(() => {});
   };
   useEffect(() => { refresh(); }, []);

@@ -36,7 +36,7 @@ export default function M18NewsIntel() {
 
   const refresh = () => {
     fetch("/m18/news/stats").then(r => r.json()).then(setStats).catch(() => {});
-    fetch("/m18/news/articles/latest?limit=10").then(r => r.json()).then(setLatest).catch(() => {});
+    fetch("/m18/news/articles/latest?limit=10").then(r => r.json()).then(d => setLatest(Array.isArray(d) ? d : [])).catch(() => {});
   };
   useEffect(() => { refresh(); }, []);
 

@@ -28,8 +28,8 @@ export default function M18EarningsIntel() {
   const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
   const refresh = () => {
-    fetch(`/m18/earnings/releases/${ticker.toUpperCase()}`).then(r => r.json()).then(setReleases).catch(() => {});
-    fetch("/m18/earnings/calendar/upcoming?limit=15").then(r => r.json()).then(setCalendar).catch(() => {});
+    fetch(`/m18/earnings/releases/${ticker.toUpperCase()}`).then(r => r.json()).then(d => setReleases(Array.isArray(d) ? d : [])).catch(() => {});
+    fetch("/m18/earnings/calendar/upcoming?limit=15").then(r => r.json()).then(d => setCalendar(Array.isArray(d) ? d : [])).catch(() => {});
   };
   useEffect(() => { refresh(); }, [ticker]);
 

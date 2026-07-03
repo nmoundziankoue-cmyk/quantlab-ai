@@ -47,7 +47,7 @@ export default function M18AgentConsole() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("/m18/agents/list").then(r => r.json()).then(setAgents).catch(() => {});
+    fetch("/m18/agents/list").then(r => r.json()).then(d => setAgents(Array.isArray(d) ? d : [])).catch(() => {});
   }, []);
 
   const runAgent = async (type) => {

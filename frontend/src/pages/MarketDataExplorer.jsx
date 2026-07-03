@@ -143,7 +143,7 @@ function ValidationTab() {
             <div style={S.metricBox}><div style={{ ...S.metricValue, color: result.error_count > 0 ? "#f85149" : "#3fb950" }}>{result.error_count}</div><div style={S.metricLabel}>Errors</div></div>
             <div style={S.metricBox}><div style={{ ...S.metricValue, color: result.warning_count > 0 ? "#d29922" : "#3fb950" }}>{result.warning_count}</div><div style={S.metricLabel}>Warnings</div></div>
           </div>
-          {result.issues.length > 0 && (
+          {result.issues?.length > 0 && (
             <div style={S.card}>
               <div style={S.title}>Issues Detected</div>
               {result.issues.map((iss, i) => (
