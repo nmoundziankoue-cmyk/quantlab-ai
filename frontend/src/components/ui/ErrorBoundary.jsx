@@ -31,7 +31,7 @@ export default class ErrorBoundary extends Component {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
-          <div style={styles.icon}>⚠</div>
+          <div style={styles.icon}>ERROR</div>
           <h3 style={styles.title}>Something went wrong</h3>
           <p style={styles.msg}>{this.state.error?.message || "An unexpected error occurred."}</p>
           <button style={styles.btn} onClick={() => this.reset()}>Try again</button>
@@ -42,10 +42,10 @@ export default class ErrorBoundary extends Component {
 }
 
 const styles = {
-  container: { display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px" },
-  card: { background: "#111827", border: "1px solid #1e293b", borderRadius: 12, padding: "32px 40px", textAlign: "center", maxWidth: 420 },
-  icon: { fontSize: 32, marginBottom: 12 },
-  title: { color: "#f1f5f9", margin: "0 0 8px", fontSize: 18 },
-  msg: { color: "#94a3b8", margin: "0 0 20px", fontSize: 14, lineHeight: 1.6 },
-  btn: { background: "#3b82f6", color: "#fff", border: "none", borderRadius: 6, padding: "8px 20px", cursor: "pointer", fontSize: 14 },
+  container: { display: "flex", alignItems: "center", justifyContent: "center", padding: "60px 20px", minHeight: 300 },
+  card: { background: "var(--panel, #131720)", border: "1px solid var(--border, #232A3D)", borderRadius: 8, padding: "32px 40px", textAlign: "center", maxWidth: 440 },
+  icon: { fontFamily: "var(--font-mono, monospace)", fontSize: 11, color: "var(--negative, #E5473E)", letterSpacing: "0.1em", marginBottom: 14 },
+  title: { fontFamily: "var(--font-display, sans-serif)", color: "var(--text-1, #DDE2EE)", margin: "0 0 8px", fontSize: 17, fontWeight: 700 },
+  msg: { fontFamily: "var(--font-body, sans-serif)", color: "var(--text-3, #454D66)", margin: "0 0 24px", fontSize: 13, lineHeight: 1.6 },
+  btn: { fontFamily: "var(--font-mono, monospace)", background: "var(--accent, #567EFF)22", color: "var(--accent, #567EFF)", border: "1px solid var(--accent, #567EFF)55", borderRadius: 6, padding: "8px 20px", cursor: "pointer", fontSize: 12 },
 };

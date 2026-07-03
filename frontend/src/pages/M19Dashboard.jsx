@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -34,6 +35,7 @@ const MODULES = [
 ];
 
 export default function M19Dashboard() {
+  const navigate = useNavigate();
   const [caps, setCaps] = useState(null);
 
   useEffect(() => {
@@ -80,7 +82,7 @@ export default function M19Dashboard() {
         <div style={S.sHdr}>Modules</div>
         <div style={S.modGrid}>
           {MODULES.map(m => (
-            <div key={m.path} style={S.mod(m.color)} onClick={() => window.location.href = m.path}>
+            <div key={m.path} style={S.mod(m.color)} onClick={() => navigate(m.path)}>
               <div style={S.modTitle}>{m.label}</div>
               <div style={S.modDesc}>{m.desc}</div>
             </div>

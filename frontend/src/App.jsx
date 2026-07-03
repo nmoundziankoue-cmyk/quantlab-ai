@@ -164,7 +164,7 @@ export default function App() {
       {/* Protected app shell */}
       <Route element={<ProtectedRoute><Shell /></ProtectedRoute>}>
         <Route index element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
-        <Route path="portfolio/:id" element={<Suspense fallback={<PageLoader />}><Portfolio /></Suspense>} />
+        <Route path="portfolio-detail/:id" element={<Suspense fallback={<PageLoader />}><Portfolio /></Suspense>} />
         <Route path="markets" element={<Suspense fallback={<PageLoader />}><Markets /></Suspense>} />
         <Route path="research" element={<Suspense fallback={<PageLoader />}><Research /></Suspense>} />
         <Route path="analytics" element={<Suspense fallback={<PageLoader />}><PortfolioAnalytics /></Suspense>} />
@@ -297,6 +297,14 @@ export default function App() {
         <Route path="m17-execution" element={<Suspense fallback={<PageLoader />}><M17ExecutionMonitor /></Suspense>} />
         <Route path="m17-orders" element={<Suspense fallback={<PageLoader />}><M17Orders /></Suspense>} />
         <Route path="m17-history" element={<Suspense fallback={<PageLoader />}><M17ExecutionHistory /></Suspense>} />
+        <Route path="*" element={
+          <div style={{ padding: "60px 40px", textAlign: "center" }}>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--accent)", letterSpacing: "0.1em", marginBottom: 12 }}>404</div>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 22, color: "var(--text-1)", margin: "0 0 8px" }}>Page not found</h2>
+            <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--text-3)", margin: "0 0 24px" }}>This route doesn't exist in QuantLab AI.</p>
+            <a href="/" style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--accent)", textDecoration: "none", border: "1px solid var(--accent)", padding: "8px 20px", borderRadius: 6 }}>← Back to Dashboard</a>
+          </div>
+        } />
       </Route>
     </Routes>
       </ToastProvider>

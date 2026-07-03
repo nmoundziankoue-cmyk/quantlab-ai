@@ -141,7 +141,7 @@ export default function Sidebar() {
       setName("");
       setShowForm(false);
       setSelected(p.id);
-      navigate(`/portfolio/${p.id}`);
+      navigate(`/portfolio-detail/${p.id}`);
     } catch (err) {
       setFormError(err.message);
     }
@@ -223,7 +223,7 @@ export default function Sidebar() {
             {portfolios.map((p) => (
               <NavLink
                 key={p.id}
-                to={`/portfolio/${p.id}`}
+                to={`/portfolio-detail/${p.id}`}
                 onClick={() => setSelected(p.id)}
                 style={({ isActive }) => ({
                   ...S.navLink,

@@ -2,6 +2,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { useWebSocket } from "../../hooks/useWebSocket";
 import useRegimeStore, { REGIME_COLORS } from "../../store/useRegimeStore";
+import ErrorBoundary from "../ui/ErrorBoundary";
 
 const WS_BASE = (import.meta.env.VITE_API_URL || "http://localhost:8001")
   .replace(/^http/, "ws");
@@ -45,6 +46,7 @@ export default function Shell() {
     reconnect: true,
     reconnectAttempts: 20,
   });
+  const { pathname } = useLocation();
 
   return (
     <div style={S.root}>
@@ -52,7 +54,9 @@ export default function Shell() {
       <div style={S.content}>
         <Topbar wsState={wsState} />
         <main style={S.main}>
-          <Outlet />
+          <ErrorBoundary key={pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>

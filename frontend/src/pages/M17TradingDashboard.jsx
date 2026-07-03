@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -34,6 +35,7 @@ const MODULES = [
 ];
 
 export default function M17TradingDashboard() {
+  const navigate = useNavigate();
   const [account, setAccount] = useState(null);
   const [error, setError] = useState(null);
 
@@ -73,7 +75,7 @@ export default function M17TradingDashboard() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
         {MODULES.map(m => (
           <div key={m.path} style={{ ...S.card, borderLeft: `3px solid ${m.color}`, cursor: "pointer" }}
-               onClick={() => window.location.href = m.path}>
+               onClick={() => navigate(m.path)}>
             <div style={{ fontSize: 13, fontWeight: 700, color: m.color, marginBottom: 4 }}>{m.label}</div>
             <div style={{ fontSize: 11, color: "#8b949e" }}>{m.desc}</div>
           </div>
