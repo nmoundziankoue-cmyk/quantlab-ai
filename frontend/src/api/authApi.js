@@ -1,11 +1,10 @@
 import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8001";
-const BASE = `${BASE_URL}/auth`;
+const BASE = "/auth";
 
 // Standalone client — no auth-header injection (used for auth endpoints themselves).
 const _client = axios.create({
-  baseURL: BASE_URL,
+  baseURL: "",
   headers: { "Content-Type": "application/json" },
   timeout: 15_000,
 });

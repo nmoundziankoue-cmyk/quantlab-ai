@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 
-const API = import.meta.env.VITE_API_URL ?? "http://localhost:8001";
+const API = "";
 const card = { background: "#161b22", border: "1px solid #30363d", borderRadius: 8, padding: 20 };
 const input = {
   background: "#0d1117", border: "1px solid #30363d", borderRadius: 6,

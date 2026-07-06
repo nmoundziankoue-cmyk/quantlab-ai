@@ -1,14 +1,27 @@
 import { Outlet, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
-import { useWebSocket } from "../../hooks/useWebSocket";
 import useRegimeStore, { REGIME_COLORS } from "../../store/useRegimeStore";
 import ErrorBoundary from "../ui/ErrorBoundary";
 
-const WS_BASE = (import.meta.env.VITE_API_URL || "http://localhost:8001")
-  .replace(/^http/, "ws");
+const WS_LABELS = { connecting: "Connecting", open: "Live", closed: "Offline" };
+const WS_COLORS = { connecting: "#E2A52B", open: "#27C784", closed: "#454D66" };
 
-const WS_LABELS = { connecting: "Connecting", open: "Live", closed: "Offline", error: "Error" };
-const WS_COLORS = { connecting: "#E2A52B", open: "#27C784", closed: "#454D66", error: "#E5473E" };
+function useBackendStatus() {
+  const [state, setState] = useState("connecting");
+  useEffect(() => {
+    let alive = true;
+    const probe = () => {
+      fetch("/health", { signal: AbortSignal.timeout(8000) })
+        .then((r) => { if (alive) setState(r.ok ? "open" : "closed"); })
+        .catch(() => { if (alive) setState("closed"); });
+    };
+    probe();
+    const id = setInterval(probe, 30_000);
+    return () => { alive = false; clearInterval(id); };
+  }, []);
+  return state;
+}
 
 function Topbar({ wsState }) {
   const regime = useRegimeStore((s) => s.regime);
@@ -41,11 +54,7 @@ function Topbar({ wsState }) {
 }
 
 export default function Shell() {
-  const { state: wsState } = useWebSocket({
-    url: `${WS_BASE}/ws/v3?channels=system_metrics`,
-    reconnect: true,
-    reconnectAttempts: 20,
-  });
+  const wsState = useBackendStatus();
   const { pathname } = useLocation();
 
   return (

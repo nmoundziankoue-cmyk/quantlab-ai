@@ -17,6 +17,13 @@
     { "source": "/notifications/:path*",      "destination": "https://quantlab-ai-2c2i.onrender.com/notifications/:path*" },
     { "source": "/auth/:path*",               "destination": "https://quantlab-ai-2c2i.onrender.com/auth/:path*" },
     { "source": "/health",                    "destination": "https://quantlab-ai-2c2i.onrender.com/health" },
+    { "source": "/multi-asset/:path*",        "destination": "https://quantlab-ai-2c2i.onrender.com/multi-asset/:path*" },
+    { "source": "/events/:path*",             "destination": "https://quantlab-ai-2c2i.onrender.com/events/:path*" },
+    { "source": "/trading/:path*",            "destination": "https://quantlab-ai-2c2i.onrender.com/trading/:path*" },
+    { "source": "/observability/:path*",      "destination": "https://quantlab-ai-2c2i.onrender.com/observability/:path*" },
+    { "source": "/portfolio-optimization/:path*", "destination": "https://quantlab-ai-2c2i.onrender.com/portfolio-optimization/:path*" },
+    { "source": "/alt-intelligence/:path*",   "destination": "https://quantlab-ai-2c2i.onrender.com/alt-intelligence/:path*" },
+    { "source": "/analytics/:path*",          "destination": "https://quantlab-ai-2c2i.onrender.com/analytics/:path*" },
     { "source": "/(.*)",                      "destination": "/index.html" }
   ]
 }

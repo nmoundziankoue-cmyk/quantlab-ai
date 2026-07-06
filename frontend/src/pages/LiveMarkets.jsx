@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
-const API = import.meta.env.VITE_API_URL ?? "http://localhost:8001";
+const API = "";
 const TICKERS = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "JPM", "V", "XOM"];
 
 function QuoteCard({ ticker }) {

@@ -1,17 +1,16 @@
-const BASE = `${import.meta.env.VITE_API_URL ?? "http://localhost:8001"}/economic-calendar`;
+import client from "./client";
+
+const BASE = "/economic-calendar";
 
 export const economicCalendarApi = {
-  createEvent: (body) => fetch(`${BASE}/events`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json()),
-  listEvents: (params = {}) => {
-    const qs = new URLSearchParams(params).toString();
-    return fetch(`${BASE}/events${qs ? `?${qs}` : ""}`).then((r) => r.json());
-  },
-  getUpcoming: (days = 7) => fetch(`${BASE}/events/upcoming?days=${days}`).then((r) => r.json()),
-  getHighImpact: (limit = 20) => fetch(`${BASE}/events/high-impact?limit=${limit}`).then((r) => r.json()),
-  getEvent: (id) => fetch(`${BASE}/events/${id}`).then((r) => r.json()),
-  updateEvent: (id, body) => fetch(`${BASE}/events/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json()),
-  deleteEvent: (id) => fetch(`${BASE}/events/${id}`, { method: "DELETE" }).then((r) => r.json()),
-  getByCountry: () => fetch(`${BASE}/by-country`).then((r) => r.json()),
-  seed: () => fetch(`${BASE}/seed`, { method: "POST" }).then((r) => r.json()),
-  getImpactSummary: () => fetch(`${BASE}/impact-summary`).then((r) => r.json()),
+  createEvent: (body) => client.post(`${BASE}/events`, body).then((r) => r.data),
+  listEvents: (params = {}) => client.get(`${BASE}/events`, { params }).then((r) => r.data),
+  getUpcoming: (days = 7) => client.get(`${BASE}/events/upcoming`, { params: { days } }).then((r) => r.data),
+  getHighImpact: (limit = 20) => client.get(`${BASE}/events/high-impact`, { params: { limit } }).then((r) => r.data),
+  getEvent: (id) => client.get(`${BASE}/events/${id}`).then((r) => r.data),
+  updateEvent: (id, body) => client.put(`${BASE}/events/${id}`, body).then((r) => r.data),
+  deleteEvent: (id) => client.delete(`${BASE}/events/${id}`).then((r) => r.data),
+  getByCountry: () => client.get(`${BASE}/by-country`).then((r) => r.data),
+  seed: () => client.post(`${BASE}/seed`).then((r) => r.data),
+  getImpactSummary: () => client.get(`${BASE}/impact-summary`).then((r) => r.data),
 };

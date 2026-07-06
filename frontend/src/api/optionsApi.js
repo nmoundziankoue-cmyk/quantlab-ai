@@ -1,12 +1,15 @@
-const BASE = `${import.meta.env.VITE_API_URL ?? "http://localhost:8001"}/options`;
+import client from "./client";
+
+const BASE = "/options";
 
 export const optionsApi = {
-  priceOption: (body) => fetch(`${BASE}/price`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json()),
-  getImpliedVol: (body) => fetch(`${BASE}/implied-vol`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json()),
-  getChain: (body) => fetch(`${BASE}/chain`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json()),
-  getIVSurface: (body) => fetch(`${BASE}/iv-surface`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json()),
-  getMaxPain: (body) => fetch(`${BASE}/max-pain`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json()),
-  getExpectedMove: (body) => fetch(`${BASE}/expected-move`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json()),
-  getSkew: (body) => fetch(`${BASE}/skew`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json()),
-  getTickerSummary: (ticker, underlyingPrice = 150, atmIv = 0.25) => fetch(`${BASE}/ticker/${ticker}?underlying_price=${underlyingPrice}&atm_iv=${atmIv}`).then((r) => r.json()),
+  priceOption: (body) => client.post(`${BASE}/price`, body).then((r) => r.data),
+  getImpliedVol: (body) => client.post(`${BASE}/implied-vol`, body).then((r) => r.data),
+  getChain: (body) => client.post(`${BASE}/chain`, body).then((r) => r.data),
+  getIVSurface: (body) => client.post(`${BASE}/iv-surface`, body).then((r) => r.data),
+  getMaxPain: (body) => client.post(`${BASE}/max-pain`, body).then((r) => r.data),
+  getExpectedMove: (body) => client.post(`${BASE}/expected-move`, body).then((r) => r.data),
+  getSkew: (body) => client.post(`${BASE}/skew`, body).then((r) => r.data),
+  getTickerSummary: (ticker, underlyingPrice = 150, atmIv = 0.25) =>
+    client.get(`${BASE}/ticker/${ticker}`, { params: { underlying_price: underlyingPrice, atm_iv: atmIv } }).then((r) => r.data),
 };

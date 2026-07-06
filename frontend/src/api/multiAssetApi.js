@@ -1,7 +1,6 @@
-import axios from "axios";
+import client from "./client";
 
-const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8001";
-const api = axios.create({ baseURL: BASE, timeout: 30000 });
+const api = client;
 
 export const multiAssetApi = {
   // Asset Registry
