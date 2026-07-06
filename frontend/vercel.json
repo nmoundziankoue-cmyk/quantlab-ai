@@ -40,6 +40,10 @@
     { "source": "/screeners/:path*",          "destination": "https://quantlab-ai-2c2i.onrender.com/screeners/:path*" },
     { "source": "/trading-alerts/:path*",     "destination": "https://quantlab-ai-2c2i.onrender.com/trading-alerts/:path*" },
     { "source": "/workspace/:path*",          "destination": "https://quantlab-ai-2c2i.onrender.com/workspace/:path*" },
+    { "source": "/execution/:path*",          "destination": "https://quantlab-ai-2c2i.onrender.com/execution/:path*" },
+    { "source": "/providers/:path*",          "destination": "https://quantlab-ai-2c2i.onrender.com/providers/:path*" },
+    { "source": "/knowledge/:path*",          "destination": "https://quantlab-ai-2c2i.onrender.com/knowledge/:path*" },
+    { "source": "/backtest/:path*",           "destination": "https://quantlab-ai-2c2i.onrender.com/backtest/:path*" },
     { "source": "/(.*)",                      "destination": "/index.html" }
   ]
 }

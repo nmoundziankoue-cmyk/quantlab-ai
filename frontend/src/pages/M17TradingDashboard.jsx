@@ -41,8 +41,8 @@ export default function M17TradingDashboard() {
 
   useEffect(() => {
     fetch("/trading/paper/account")
-      .then(r => r.json())
-      .then(setAccount)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setAccount(d); })
       .catch(() => setError("Paper trading engine offline — connect a backend to enable simulation"));
   }, []);
 

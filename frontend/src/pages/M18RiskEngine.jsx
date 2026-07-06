@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatApiError } from "../utils/formatApiError";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -45,7 +46,7 @@ export default function M18RiskEngine() {
   const addPnl = async () => { await post("/m18/risk/pnl", { pnl: parseFloat(pnl) }); setMsg("P&L recorded"); };
   const computeVar = async () => {
     const r = await post("/m18/risk/var", { confidence: 0.95, window: 252 });
-    if (r.ok) { const d = await r.json(); setVarResult(d); } else { const d = await r.json(); setMsg(d.detail); }
+    if (r.ok) { const d = await r.json(); setVarResult(d); } else { const d = await r.json(); setMsg(formatApiError(d.detail)); }
   };
   const runStress = async () => {
     const r = await post("/m18/risk/stress-test", { scenario_name: "EQUITY_CRASH_20PCT", shock_pct: -0.20 });

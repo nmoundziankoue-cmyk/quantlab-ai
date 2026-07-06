@@ -42,6 +42,10 @@ export default defineConfig({
       '/screeners': 'http://localhost:8001',
       '/trading-alerts': 'http://localhost:8001',
       '/workspace': 'http://localhost:8001',
+      '/execution': 'http://localhost:8001',
+      '/providers': 'http://localhost:8001',
+      '/knowledge': 'http://localhost:8001',
+      '/backtest': 'http://localhost:8001',
     },
   },
   build: {

@@ -27,7 +27,7 @@ export default function M17RiskLimits() {
   const [checkResult, setCheckResult] = useState(null);
   const [msg, setMsg] = useState(null);
 
-  const loadLimits = () => fetch("/trading/risk/limits").then(r=>r.json()).then(d=>setLimits(d.limits||[])).catch(()=>{});
+  const loadLimits = () => fetch("/trading/risk/limits").then(r => r.ok ? r.json() : Promise.reject()).then(d=>setLimits(d.limits||[])).catch(()=>{});
   useEffect(() => { loadLimits(); }, []);
 
   const addLimit = async () => {

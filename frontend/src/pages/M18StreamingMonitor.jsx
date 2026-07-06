@@ -43,8 +43,12 @@ export default function M18StreamingMonitor() {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ticker, price: parseFloat(price), volume: parseFloat(volume), venue: "NYSE" }),
     });
-    const d = await r.json();
-    setLog(l => [...l, `[TICK] ${ticker} @ $${price} vol=${volume} → seq#${d.sequence}`]);
+    if (r.ok) {
+      const d = await r.json();
+      setLog(l => [...l, `[TICK] ${ticker} @ $${price} vol=${volume} → seq#${d.sequence}`]);
+    } else {
+      setLog(l => [...l, `[TICK] ERROR ${r.status}`]);
+    }
     refresh();
   };
 
@@ -53,8 +57,12 @@ export default function M18StreamingMonitor() {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ticker, headline: `${ticker} reports strong quarterly results`, source: "Reuters", sentiment_score: 0.45 }),
     });
-    const d = await r.json();
-    setLog(l => [...l, `[NEWS] ${ticker} positive headline → seq#${d.sequence}`]);
+    if (r.ok) {
+      const d = await r.json();
+      setLog(l => [...l, `[NEWS] ${ticker} positive headline → seq#${d.sequence}`]);
+    } else {
+      setLog(l => [...l, `[NEWS] ERROR ${r.status}`]);
+    }
     refresh();
   };
 

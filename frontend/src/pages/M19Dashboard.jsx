@@ -74,7 +74,7 @@ export default function M19Dashboard() {
   const [caps, setCaps] = useState(null);
 
   useEffect(() => {
-    fetch("/quant/capabilities").then(r => r.json()).then(setCaps).catch(() => {});
+    fetch("/quant/capabilities").then(r => r.ok ? r.json() : null).then(d => { if (d) setCaps(d); }).catch(() => {});
   }, []);
 
   return (

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatApiError } from "../utils/formatApiError";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -46,7 +47,7 @@ export default function M18AlertCenter() {
 
   const addRule = async () => {
     const r = await post("/m18/alerts/rules", { ...form, threshold: parseFloat(form.threshold) });
-    if (r.ok) { setMsg("Rule added"); refresh(); } else { const d = await r.json(); setMsg(d.detail); }
+    if (r.ok) { setMsg("Rule added"); refresh(); } else { const d = await r.json(); setMsg(formatApiError(d.detail)); }
   };
   const deleteRule = async (id) => { await fetch(`/m18/alerts/rules/${id}`, { method: "DELETE" }); refresh(); };
   const evalAlert = async () => {

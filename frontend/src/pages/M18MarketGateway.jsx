@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatApiError } from "../utils/formatApiError";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -37,13 +38,13 @@ export default function M18MarketGateway() {
   const setQuote = async () => {
     const r = await post("/m18/gateway/quote/set", { ticker, bid: parseFloat(bid), ask: parseFloat(ask), bid_size: 100, ask_size: 100, venue });
     if (r.ok) { setMsg(`Quote set: ${ticker} bid=${bid} ask=${ask} @${venue}`); refresh(); }
-    else { const d = await r.json(); setMsg(d.detail); }
+    else { const d = await r.json(); setMsg(formatApiError(d.detail)); }
   };
 
   const ingestTick = async () => {
     const r = await post("/m18/gateway/tick/ingest", { ticker, price: parseFloat(bid), volume: 1000, venue });
     if (r.ok) { setMsg(`Tick ingested: ${ticker} @ ${bid}`); }
-    else { const d = await r.json(); setMsg(d.detail); }
+    else { const d = await r.json(); setMsg(formatApiError(d.detail)); }
   };
 
   const venueList = summary?.venues || [];

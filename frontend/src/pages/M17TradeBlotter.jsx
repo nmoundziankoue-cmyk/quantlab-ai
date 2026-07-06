@@ -23,7 +23,7 @@ export default function M17TradeBlotter() {
   const [loading, setLoading] = useState(true);
 
   const load = () =>
-    fetch("/trading/orders").then(r => r.json()).then(d => { setOrders(d.orders || []); setLoading(false); }).catch(() => { setLoading(false); });
+    fetch("/trading/orders").then(r => r.ok ? r.json() : Promise.reject()).then(d => { setOrders(d.orders || []); setLoading(false); }).catch(() => { setLoading(false); });
 
   useEffect(() => { load(); const id = setInterval(load, 5000); return () => clearInterval(id); }, []);
 

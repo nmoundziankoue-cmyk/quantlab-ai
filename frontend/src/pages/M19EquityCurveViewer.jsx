@@ -47,9 +47,9 @@ export default function M19EquityCurveViewer() {
     setLoading(true); setErr("");
     try {
       const [ec, dd, mr] = await Promise.all([
-        fetch(`/quant/backtest/${btId}/equity-curve`).then(r => r.json()),
-        fetch(`/quant/backtest/${btId}/drawdown`).then(r => r.json()),
-        fetch(`/quant/backtest/${btId}/monthly-returns`).then(r => r.json()),
+        fetch(`/quant/backtest/${btId}/equity-curve`).then(r => r.ok ? r.json() : []),
+        fetch(`/quant/backtest/${btId}/drawdown`).then(r => r.ok ? r.json() : []),
+        fetch(`/quant/backtest/${btId}/monthly-returns`).then(r => r.ok ? r.json() : null),
       ]);
       setCurve(Array.isArray(ec) ? ec : []);
       setDrawdown(Array.isArray(dd) ? dd : []);
