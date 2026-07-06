@@ -17,7 +17,7 @@ const MODULES = [
   { label: "Execution Sim",      path: "/m19-execution",         color: "#e3b341", desc: "Order fill simulation" },
   { label: "Walk-Forward",       path: "/m19-walk-forward",      color: "#f0883e", desc: "OOS validation" },
   { label: "Monte Carlo",        path: "/m19-monte-carlo",       color: "#ff7b72", desc: "Risk projection" },
-  { label: "Factor Models",      path: "/m19-factors",           color: "#a371f7", desc: "Multi-factor regression" },
+  { label: "Factor Models",      path: "/m19-factor-exposure",   color: "#a371f7", desc: "Multi-factor regression" },
   { label: "Optimization Lab",   path: "/m19-optimization",      color: "#ffa657", desc: "MV, Sharpe, Risk Parity" },
   { label: "Strategy Compare",   path: "/m19-strategy-compare",  color: "#79c0ff", desc: "Cross-strategy analysis" },
   { label: "Factor Exposure",    path: "/m19-factor-exposure",   color: "#56d364", desc: "Betas & attribution" },

@@ -18,25 +18,29 @@ function StatCard({ title, value, unit = "" }) {
 }
 
 export default function SystemMetrics() {
-  const { data: health } = useQuery({
+  const { data: health, isLoading: healthLoading } = useQuery({
     queryKey: ["sys-health"],
     queryFn: () => axios.get(`${API}/system/health/detailed`).then(r => r.data),
     refetchInterval: 15000,
+    retry: 1,
   });
   const { data: metrics } = useQuery({
     queryKey: ["sys-metrics"],
     queryFn: () => axios.get(`${API}/system/metrics`).then(r => r.data),
     refetchInterval: 30000,
+    retry: 1,
   });
   const { data: tasks } = useQuery({
     queryKey: ["sys-tasks"],
     queryFn: () => axios.get(`${API}/system/tasks`).then(r => r.data),
     refetchInterval: 10000,
+    retry: 1,
   });
   const { data: slowOps } = useQuery({
     queryKey: ["slow-ops"],
     queryFn: () => axios.get(`${API}/observability/slow-queries`).then(r => r.data),
     refetchInterval: 30000,
+    retry: 1,
   });
 
   return (
@@ -49,12 +53,16 @@ export default function SystemMetrics() {
       {/* Health */}
       <div style={section}>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#8b949e", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>Health</div>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <StatCard title="API Status" value={health?.status ?? "..."} />
-          <StatCard title="Database" value={health?.checks?.database ?? "..."} />
-          <StatCard title="Cache" value={health?.checks?.cache ?? "..."} />
-          <StatCard title="Uptime" value={health?.uptime_s ? Math.floor(health.uptime_s / 60) : "—"} unit="min" />
-        </div>
+        {healthLoading ? (
+          <div style={{ color: "#8b949e", fontSize: 13 }}>Connecting to backend…</div>
+        ) : (
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <StatCard title="API Status" value={health?.status ?? "—"} />
+            <StatCard title="Database" value={health?.checks?.database ?? "—"} />
+            <StatCard title="Cache" value={health?.checks?.cache ?? "—"} />
+            <StatCard title="Uptime" value={health?.uptime_s ? Math.floor(health.uptime_s / 60) : "—"} unit={health?.uptime_s ? "min" : ""} />
+          </div>
+        )}
       </div>
 
       {/* Tasks */}

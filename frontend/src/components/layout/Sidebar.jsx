@@ -9,7 +9,7 @@ import { useState } from "react";
 const CORE_NAV = [
   { label: "Dashboard", to: "/" },
   { label: "Markets", to: "/markets" },
-  { label: "Portfolio", to: "/portfolio" },
+  { label: "Portfolio", to: "/analytics" },
   { label: "Research", to: "/research" },
   { label: "Trading", to: "/trading" },
 ];
@@ -25,12 +25,12 @@ const M19_NAV = [
   { label: "M19 Overview", to: "/m19-dashboard" },
   { label: "Backtest Studio", to: "/m19-backtest" },
   { label: "Monte Carlo", to: "/m19-monte-carlo" },
-  { label: "Walk-Forward", to: "/m19-walkforward" },
-  { label: "Factor Exposure", to: "/m19-factors" },
+  { label: "Walk-Forward", to: "/m19-walk-forward" },
+  { label: "Factor Exposure", to: "/m19-factor-exposure" },
   { label: "Optimization Lab", to: "/m19-optimization" },
   { label: "Execution Sim.", to: "/m19-execution" },
   { label: "Risk Dashboard", to: "/m19-risk" },
-  { label: "Equity Curves", to: "/m19-equity-curves" },
+  { label: "Equity Curves", to: "/m19-equity-curve" },
 ];
 
 const M18_NAV = [

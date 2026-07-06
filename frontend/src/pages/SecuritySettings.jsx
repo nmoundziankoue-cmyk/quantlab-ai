@@ -18,10 +18,20 @@ const S = {
 };
 
 function HealthPanel() {
-  const { data, isLoading, refetch } = useQuery({ queryKey: ["system-health"], queryFn: sysApi.getSystemHealth, refetchInterval: 30000 });
-  const { data: info } = useQuery({ queryKey: ["system-info"], queryFn: sysApi.getSystemInfo });
+  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ["system-health"], queryFn: sysApi.getSystemHealth, refetchInterval: 30000, retry: 1 });
+  const { data: info } = useQuery({ queryKey: ["system-info"], queryFn: sysApi.getSystemInfo, retry: 1 });
 
   if (isLoading) return <div style={{ color: "#8b949e", padding: 16 }}>Checking system health…</div>;
+
+  if (isError || !data) return (
+    <div style={S.card}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <div style={S.sectionTitle}>System Health</div>
+        <button style={S.btn("#21262d")} onClick={refetch}>Refresh</button>
+      </div>
+      <div style={{ color: "#8b949e", fontSize: 13, padding: "8px 0" }}>Backend not reachable — health data unavailable.</div>
+    </div>
+  );
 
   const components = data?.components || {};
   const overall = data?.status || "unknown";

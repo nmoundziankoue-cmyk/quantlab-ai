@@ -22,16 +22,16 @@ const S = {
 const MODULES = [
   { label: "Order Management", path: "/m17-oms", color: "#58a6ff", desc: "Submit, amend, cancel orders" },
   { label: "Order Ticket", path: "/m17-order-ticket", color: "#3fb950", desc: "Quick order entry" },
-  { label: "Trade Blotter", path: "/m17-trade-blotter", color: "#e3b341", desc: "Real-time blotter" },
+  { label: "Trade Blotter", path: "/m17-blotter", color: "#e3b341", desc: "Real-time blotter" },
   { label: "Positions", path: "/m17-positions", color: "#f0883e", desc: "Long/short positions" },
-  { label: "Portfolio Accounting", path: "/m17-portfolio-accounting", color: "#a371f7", desc: "Cash, P&L, NAV" },
-  { label: "Risk Limits", path: "/m17-risk-limits", color: "#ff7b72", desc: "Pre-trade checks" },
+  { label: "Portfolio Accounting", path: "/m17-accounting", color: "#a371f7", desc: "Cash, P&L, NAV" },
+  { label: "Risk Limits", path: "/m17-risk", color: "#ff7b72", desc: "Pre-trade checks" },
   { label: "Paper Trading", path: "/m17-paper-trading", color: "#ffa657", desc: "Simulated execution" },
-  { label: "Trade Analytics", path: "/m17-trade-analytics", color: "#79c0ff", desc: "Win rate, Sharpe, Kelly" },
-  { label: "TCA / Execution Cost", path: "/m17-execution-cost", color: "#56d364", desc: "Spread, slippage, IS" },
-  { label: "Performance Attribution", path: "/m17-performance-attribution", color: "#d2a8ff", desc: "Brinson, factor, currency" },
-  { label: "Broker Dashboard", path: "/m17-broker-dashboard", color: "#ff9f43", desc: "Broker registry & routing" },
-  { label: "Execution Monitor", path: "/m17-execution-monitor", color: "#48dbfb", desc: "Live execution quality" },
+  { label: "Trade Analytics", path: "/m17-analytics", color: "#79c0ff", desc: "Win rate, Sharpe, Kelly" },
+  { label: "TCA / Execution Cost", path: "/m17-tca", color: "#56d364", desc: "Spread, slippage, IS" },
+  { label: "Performance Attribution", path: "/m17-attribution", color: "#d2a8ff", desc: "Brinson, factor, currency" },
+  { label: "Broker Dashboard", path: "/m17-brokers", color: "#ff9f43", desc: "Broker registry & routing" },
+  { label: "Execution Monitor", path: "/m17-execution", color: "#48dbfb", desc: "Live execution quality" },
 ];
 
 export default function M17TradingDashboard() {
@@ -43,7 +43,7 @@ export default function M17TradingDashboard() {
     fetch("/trading/paper/account")
       .then(r => r.json())
       .then(setAccount)
-      .catch(() => setError("Paper account unavailable"));
+      .catch(() => setError("Paper trading engine offline — connect a backend to enable simulation"));
   }, []);
 
   const metrics = account ? [
@@ -82,7 +82,7 @@ export default function M17TradingDashboard() {
         ))}
       </div>
 
-      {error && <div style={{ marginTop: 16, color: "#ff7b72", fontSize: 12 }}>{error}</div>}
+      {error && <div style={{ marginTop: 16, color: "#484f58", fontSize: 11, fontStyle: "italic" }}>{error}</div>}
     </div>
   );
 }
