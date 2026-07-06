@@ -30,15 +30,15 @@ export default function EconomicCalendar({ daysAhead = 30 }) {
   const { data, isLoading } = useCalendar(daysAhead);
 
   if (isLoading) return <div style={styles.empty}>Loading calendar…</div>;
-  if (!data || !data.events.length)
+  if (!data?.events?.length)
     return <div style={styles.empty}>No events in this window.</div>;
 
-  const groups = groupByDate(data.events);
+  const groups = groupByDate(data.events ?? []);
 
   return (
     <div style={styles.root}>
       <div style={styles.meta}>
-        Next {daysAhead} days · {data.events.length} events
+        Next {daysAhead} days · {data.events?.length ?? 0} events
       </div>
       {[...groups.entries()].map(([date, events]) => (
         <div key={date} style={styles.dateGroup}>

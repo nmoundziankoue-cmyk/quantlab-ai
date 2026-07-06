@@ -27,6 +27,8 @@ export default function NewsFeed({ ticker }) {
   if (isLoading) return <div style={styles.empty}>Loading news…</div>;
   if (isError || !data) return <div style={styles.empty}>Could not load news.</div>;
 
+  const articles = data.articles ?? [];
+
   return (
     <div style={styles.root}>
       {/* Sentiment header */}
@@ -39,16 +41,16 @@ export default function NewsFeed({ ticker }) {
         />
         <div style={styles.sentimentMeta}>
           <div style={styles.sentimentTicker}>{ticker}</div>
-          <div style={styles.sentimentSub}>Sentiment from {data.articles.length} recent articles</div>
+          <div style={styles.sentimentSub}>Sentiment from {articles.length} recent articles</div>
         </div>
       </div>
 
       {/* Article list */}
-      {data.articles.length === 0 ? (
+      {articles.length === 0 ? (
         <div style={styles.empty}>No recent news available.</div>
       ) : (
         <div style={styles.list}>
-          {data.articles.map((a) => (
+          {articles.map((a) => (
             <a
               key={a.uuid}
               href={a.link}
@@ -67,9 +69,9 @@ export default function NewsFeed({ ticker }) {
                 <span style={styles.pubDate}>{fmtDate(a.published_at)}</span>
               </div>
               <div style={styles.title}>{a.title}</div>
-              {a.related_tickers.length > 0 && (
+              {(a.related_tickers ?? []).length > 0 && (
                 <div style={styles.tickers}>
-                  {a.related_tickers.slice(0, 5).map((t) => (
+                  {(a.related_tickers ?? []).slice(0, 5).map((t) => (
                     <span key={t} style={styles.tickerBadge}>{t}</span>
                   ))}
                 </div>

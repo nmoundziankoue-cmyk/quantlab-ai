@@ -64,7 +64,6 @@ export const useNews = (ticker) =>
     queryFn: () => getNews(ticker),
     enabled: !!ticker,
     staleTime: 10 * 60_000,
-    select: (data) => (Array.isArray(data) ? data : []),
   });
 
 export const useSentiment = (ticker) =>
@@ -80,7 +79,7 @@ export const useCalendar = (daysAhead = 30) =>
     queryKey: marketKeys.calendar(daysAhead),
     queryFn: () => getCalendar(daysAhead),
     staleTime: 60 * 60_000,
-    select: (data) => (Array.isArray(data) ? data : []),
+    select: (data) => (data?.events ? data : { events: [] }),
   });
 
 // ---------------------------------------------------------------------------

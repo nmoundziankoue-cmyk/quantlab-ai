@@ -63,7 +63,12 @@ export default function EventDashboard() {
   }, []);
 
   if (loading) return <div style={{ color: "#8b949e", padding: 32 }}>Loading event dashboard…</div>;
-  if (error) return <div style={{ color: "#f85149", padding: 32 }}>{error}</div>;
+  if (error) return (
+    <div style={{ padding: 32, color: "#f0f6fc", fontFamily: "monospace" }}>
+      <div style={{ fontSize: 14, color: "#8b949e", marginBottom: 8 }}>Event Dashboard</div>
+      <div style={{ fontSize: 13, color: "#8b949e" }}>Backend not reachable — event data unavailable.</div>
+    </div>
+  );
 
   const corp = stats?.corporate || {};
   const mac = stats?.macro || {};

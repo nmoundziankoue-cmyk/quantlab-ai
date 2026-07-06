@@ -45,7 +45,7 @@ function GroupBlock({ group }) {
         </div>
       </div>
       <div style={{ ...CARD, padding: "8px 16px" }}>
-        {group.events.map((ev, i) => <TimelineEvent key={ev.id || i} ev={ev} />)}
+        {(group.events ?? []).map((ev, i) => <TimelineEvent key={ev.id || i} ev={ev} />)}
       </div>
     </div>
   );
