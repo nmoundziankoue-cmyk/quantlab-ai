@@ -28,6 +28,18 @@
     { "source": "/portfolio-optimization/:path*", "destination": "https://quantlab-ai-2c2i.onrender.com/portfolio-optimization/:path*" },
     { "source": "/alt-intelligence/:path*",   "destination": "https://quantlab-ai-2c2i.onrender.com/alt-intelligence/:path*" },
     { "source": "/analytics/:path*",          "destination": "https://quantlab-ai-2c2i.onrender.com/analytics/:path*" },
+    { "source": "/agents/:path*",             "destination": "https://quantlab-ai-2c2i.onrender.com/agents/:path*" },
+    { "source": "/brokers/:path*",            "destination": "https://quantlab-ai-2c2i.onrender.com/brokers/:path*" },
+    { "source": "/documents/:path*",          "destination": "https://quantlab-ai-2c2i.onrender.com/documents/:path*" },
+    { "source": "/executions/:path*",         "destination": "https://quantlab-ai-2c2i.onrender.com/executions/:path*" },
+    { "source": "/market-data/:path*",        "destination": "https://quantlab-ai-2c2i.onrender.com/market-data/:path*" },
+    { "source": "/news/:path*",               "destination": "https://quantlab-ai-2c2i.onrender.com/news/:path*" },
+    { "source": "/orders/:path*",             "destination": "https://quantlab-ai-2c2i.onrender.com/orders/:path*" },
+    { "source": "/paper/:path*",              "destination": "https://quantlab-ai-2c2i.onrender.com/paper/:path*" },
+    { "source": "/reports/:path*",            "destination": "https://quantlab-ai-2c2i.onrender.com/reports/:path*" },
+    { "source": "/screeners/:path*",          "destination": "https://quantlab-ai-2c2i.onrender.com/screeners/:path*" },
+    { "source": "/trading-alerts/:path*",     "destination": "https://quantlab-ai-2c2i.onrender.com/trading-alerts/:path*" },
+    { "source": "/workspace/:path*",          "destination": "https://quantlab-ai-2c2i.onrender.com/workspace/:path*" },
     { "source": "/(.*)",                      "destination": "/index.html" }
   ]
 }

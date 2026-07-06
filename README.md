@@ -1,12 +1,12 @@
 # QuantLab AI
 
-Institutional-grade quantitative research platform built milestone-by-milestone in **pure Python** — no scipy, numpy, pandas, or TA-Lib. Gaussian elimination, Pearson correlation, matrix inversion, Monte Carlo simulation, and Black-Scholes pricing all hand-implemented.
+Institutional-grade quantitative research platform built milestone-by-milestone in Python. Core quant engines (Gaussian elimination, Pearson correlation, matrix inversion, Monte Carlo simulation, Black-Scholes pricing) are hand-implemented from scratch; later milestones add scipy, numpy, and pandas for data ingestion and signal processing.
 
 [![CI](https://github.com/nmoundziankoue-cmyk/quantlab-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/nmoundziankoue-cmyk/quantlab-ai/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/tests-4%2C660%20passing-brightgreen)](https://github.com/nmoundziankoue-cmyk/quantlab-ai/actions)
 [![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](backend/requirements.txt)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.139-009688?logo=fastapi&logoColor=white)](backend/requirements.txt)
-[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](frontend/package.json)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](frontend/package.json)
 
 ---
 
@@ -31,15 +31,15 @@ Institutional-grade quantitative research platform built milestone-by-milestone 
 
 ## Demo — 5 pages to see first
 
-Once running, open these URLs in order:
+**Live deployment:** https://quantlab-ai-tcep.vercel.app
 
-| # | URL | What you'll see |
+| # | Path | What you'll see |
 |---|---|---|
-| 1 | `http://localhost:5173/` | Portfolio dashboard — equity curve vs S&P 500, 6 KPI cards, allocation bars, module navigator |
-| 2 | `http://localhost:5173/m20/regime` | Live regime detection — BULL/BEAR confidence, bar-by-bar history, regime distribution |
-| 3 | `http://localhost:5173/m20/comparison` | Strategy ranking — 3 strategies backtested, Sharpe/Sortino/Calmar table, equity-curve correlation matrix |
-| 4 | `http://localhost:5173/m20/correlation` | Pearson heatmap — AAPL/MSFT/GOOGL/AMZN, colour-coded green (positive) to red (negative) |
-| 5 | `http://localhost:5173/m19-monte-carlo` | Monte Carlo viewer — 500 GBM paths, VaR distribution, confidence intervals |
+| 1 | `/` | Portfolio dashboard — equity curve vs S&P 500, 6 KPI cards, allocation bars, module navigator |
+| 2 | `/m20/regime` | Live regime detection — BULL/BEAR confidence, bar-by-bar history, regime distribution |
+| 3 | `/m20/comparison` | Strategy ranking — 3 strategies backtested, Sharpe/Sortino/Calmar table, equity-curve correlation matrix |
+| 4 | `/m20/correlation` | Pearson heatmap — AAPL/MSFT/GOOGL/AMZN, colour-coded green (positive) to red (negative) |
+| 5 | `/m19-monte-carlo` | Monte Carlo viewer — 500 GBM paths, VaR distribution, confidence intervals |
 
 All 5 pages auto-populate on load — no manual button clicks needed.
 
@@ -52,7 +52,7 @@ All 5 pages auto-populate on load — no manual button clicks needed.
 | Backend | Python 3.14, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic |
 | Database | PostgreSQL (optional — M18–M20 run fully in-memory without it) |
 | Cache | Redis (optional — falls back to in-memory) |
-| Frontend | React 18, React Router v6, Vite, Recharts, Zustand |
+| Frontend | React 19, React Router v7, Vite, Recharts, Zustand |
 | Auth | JWT + refresh tokens, bcrypt, TOTP MFA |
 | Containers | Docker, Docker Compose, Nginx |
 | CI | GitHub Actions — backend tests + frontend build + Docker smoke test |
