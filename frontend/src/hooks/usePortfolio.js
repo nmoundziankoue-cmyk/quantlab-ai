@@ -30,7 +30,11 @@ export const portfolioKeys = {
 // ---------------------------------------------------------------------------
 
 export const usePortfolios = () =>
-  useQuery({ queryKey: portfolioKeys.list(), queryFn: listPortfolios });
+  useQuery({
+    queryKey: portfolioKeys.list(),
+    queryFn: listPortfolios,
+    select: (data) => (Array.isArray(data) ? data : []),
+  });
 
 export const usePortfolioSummary = (id) =>
   useQuery({

@@ -8,7 +8,7 @@
     { "source": "/research/:path*",           "destination": "https://quantlab-ai-2c2i.onrender.com/research/:path*" },
     { "source": "/system/:path*",             "destination": "https://quantlab-ai-2c2i.onrender.com/system/:path*" },
     { "source": "/market/:path*",             "destination": "https://quantlab-ai-2c2i.onrender.com/market/:path*" },
-    { "source": "/portfolio/:path*",          "destination": "https://quantlab-ai-2c2i.onrender.com/portfolio/:path*" },
+    { "source": "/portfolios/:path*",         "destination": "https://quantlab-ai-2c2i.onrender.com/portfolios/:path*" },
     { "source": "/orchestrator/:path*",       "destination": "https://quantlab-ai-2c2i.onrender.com/orchestrator/:path*" },
     { "source": "/market-intel/:path*",       "destination": "https://quantlab-ai-2c2i.onrender.com/market-intel/:path*" },
     { "source": "/knowledge-graph/:path*",    "destination": "https://quantlab-ai-2c2i.onrender.com/knowledge-graph/:path*" },

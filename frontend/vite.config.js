@@ -11,7 +11,7 @@ export default defineConfig({
       '/research': 'http://localhost:8001',
       '/system': 'http://localhost:8001',
       '/market': 'http://localhost:8001',
-      '/portfolio': 'http://localhost:8001',
+      '/portfolios': 'http://localhost:8001',
       '/multi-asset': 'http://localhost:8001',
       '/events': 'http://localhost:8001',
       '/trading': 'http://localhost:8001',
