@@ -6,6 +6,7 @@ export function useEconomicEvents(params = {}) {
     queryKey: ["economic-events", params],
     queryFn: () => economicCalendarApi.listEvents(params),
     staleTime: 120000,
+    select: (data) => (Array.isArray(data) ? data : []),
   });
 }
 
@@ -14,6 +15,7 @@ export function useUpcomingEvents(days = 7) {
     queryKey: ["upcoming-events", days],
     queryFn: () => economicCalendarApi.getUpcoming(days),
     staleTime: 300000,
+    select: (data) => (Array.isArray(data) ? data : []),
   });
 }
 
@@ -22,6 +24,7 @@ export function useHighImpactEvents() {
     queryKey: ["high-impact-events"],
     queryFn: () => economicCalendarApi.getHighImpact(),
     staleTime: 300000,
+    select: (data) => (Array.isArray(data) ? data : []),
   });
 }
 

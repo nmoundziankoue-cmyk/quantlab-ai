@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as api from "../api/aiCopilotApi";
 
 export const useCopilotSessions = (params) =>
-  useQuery({ queryKey: ["copilot-sessions", params], queryFn: () => api.listCopilotSessions(params) });
+  useQuery({ queryKey: ["copilot-sessions", params], queryFn: () => api.listCopilotSessions(params), select: (data) => (Array.isArray(data) ? data : []) });
 
 export const useCopilotSession = (id) =>
   useQuery({ queryKey: ["copilot-session", id], queryFn: () => api.getCopilotSession(id), enabled: !!id });
@@ -30,4 +30,4 @@ export const useGenerateReport = () =>
   useMutation({ mutationFn: api.generateReport });
 
 export const usePromptTemplates = () =>
-  useQuery({ queryKey: ["prompt-templates"], queryFn: api.listPromptTemplates, staleTime: Infinity });
+  useQuery({ queryKey: ["prompt-templates"], queryFn: api.listPromptTemplates, staleTime: Infinity, select: (data) => (Array.isArray(data) ? data : []) });

@@ -14,6 +14,7 @@ export const useBrokerTypes = () =>
     queryKey: ["broker-types"],
     queryFn: listBrokerTypes,
     staleTime: Infinity,
+    select: (data) => (Array.isArray(data) ? data : []),
   });
 
 export const useBrokerConnections = () =>
@@ -21,6 +22,7 @@ export const useBrokerConnections = () =>
     queryKey: ["broker-connections"],
     queryFn: listBrokerConnections,
     refetchInterval: 30000,
+    select: (data) => (Array.isArray(data) ? data : []),
   });
 
 export const useBrokerConnection = (connectionId) =>

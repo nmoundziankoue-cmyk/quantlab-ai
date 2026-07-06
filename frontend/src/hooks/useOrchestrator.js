@@ -6,6 +6,7 @@ export function useWorkflows(status) {
     queryKey: ["workflows", status],
     queryFn: () => orchestratorApi.listWorkflows(status),
     refetchInterval: 5000,
+    select: (data) => (Array.isArray(data) ? data : []),
   });
 }
 
