@@ -53,6 +53,11 @@ from routers.executions import router as executions_router
 from routers.paper import router as paper_router
 from routers.trading_alerts import router as trading_alerts_router
 
+# M15 / M16 / M19 analytics — added back; total est. RAM ~300 MB (under 512 MB free tier)
+from routers.events import router as events_router
+from routers.multi_asset import router as multi_asset_router
+from routers.portfolio_optimization import router as portfolio_optimization_router
+
 # Middleware
 from middleware.security_headers import SecurityHeadersMiddleware
 from middleware.request_id import RequestIdMiddleware
@@ -61,7 +66,7 @@ from services.cache import cache
 
 # ── EXCLUDED (scipy / networkx / heavy engines) ───────────────────────────────
 # routers.analytics           → scipy stats/optimize/cluster + networkx  (~80 MB)
-# routers.portfolio_optimization → scipy.optimize / scipy.linalg         (~64 MB)
+# routers.portfolio_optimization → scipy.optimize / scipy.linalg         (~64 MB) — RE-ENABLED
 # routers.options             → scipy.stats norm                          (~30 MB)
 # routers.options_strategies  → options analytics
 # routers.events              → 10 global engine instances                (~25 MB)
@@ -138,6 +143,9 @@ app.include_router(orders_router)
 app.include_router(executions_router)
 app.include_router(paper_router)
 app.include_router(trading_alerts_router)
+app.include_router(events_router)
+app.include_router(multi_asset_router)
+app.include_router(portfolio_optimization_router)
 
 
 @app.on_event("startup")

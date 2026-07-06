@@ -62,10 +62,10 @@ export default function M18RiskEngine() {
 
       <div style={S.grid4}>
         {[
-          { label: "NAV", val: dash ? `$${dash.nav?.toLocaleString()}` : "—" },
-          { label: "VaR 95%", val: dash ? `${(dash.var_95 * 100).toFixed(3)}%` : "—" },
-          { label: "Gross Leverage", val: dash ? `${dash.gross_leverage?.toFixed(2)}x` : "—" },
-          { label: "Margin Usage", val: dash ? `${(dash.margin_usage_pct * 100).toFixed(1)}%` : "—" },
+          { label: "NAV", val: dash ? `$${dash.nav?.toLocaleString() ?? "—"}` : "—" },
+          { label: "VaR 95%", val: dash ? (dash.var_95 != null ? `${(dash.var_95 * 100).toFixed(3)}%` : "—") : "—" },
+          { label: "Gross Leverage", val: dash ? (dash.gross_leverage != null ? `${dash.gross_leverage.toFixed(2)}x` : "—") : "—" },
+          { label: "Margin Usage", val: dash ? (dash.margin_usage_pct != null ? `${(dash.margin_usage_pct * 100).toFixed(1)}%` : "—") : "—" },
         ].map(k => <div key={k.label} style={S.card}><div style={S.label}>{k.label}</div><div style={S.val}>{k.val}</div></div>)}
       </div>
 
@@ -104,8 +104,8 @@ export default function M18RiskEngine() {
               <button style={S.btn()} onClick={computeVar}>Compute VaR</button>
               <button style={S.btn("#ff7b72")} onClick={runStress}>Stress Test −20%</button>
             </div>
-            {varResult && <div style={{ marginTop: 10, fontSize: 12, color: "#c9d1d9" }}>VaR: <b style={{ color: "#ff7b72" }}>${varResult.var_usd?.toFixed(2)}</b> ({(varResult.var_pct * 100)?.toFixed(3)}%)</div>}
-            {stressResult && <div style={{ marginTop: 8, fontSize: 12, color: "#c9d1d9" }}>{stressResult.scenario_name}: <b style={{ color: "#ff7b72" }}>${stressResult.pnl_impact_usd?.toFixed(2)}</b> ({(stressResult.pnl_impact_pct * 100)?.toFixed(2)}%)</div>}
+            {varResult && <div style={{ marginTop: 10, fontSize: 12, color: "#c9d1d9" }}>VaR: <b style={{ color: "#ff7b72" }}>${varResult.var_usd != null ? varResult.var_usd.toFixed(2) : "—"}</b> ({varResult.var_pct != null ? (varResult.var_pct * 100).toFixed(3) : "—"}%)</div>}
+            {stressResult && <div style={{ marginTop: 8, fontSize: 12, color: "#c9d1d9" }}>{stressResult.scenario_name}: <b style={{ color: "#ff7b72" }}>${stressResult.pnl_impact_usd != null ? stressResult.pnl_impact_usd.toFixed(2) : "—"}</b> ({stressResult.pnl_impact_pct != null ? (stressResult.pnl_impact_pct * 100).toFixed(2) : "—"}%)</div>}
           </div>
         </div>
       </div>
@@ -120,10 +120,10 @@ export default function M18RiskEngine() {
                 <tr key={p.ticker}>
                   <td style={{ ...S.td, color: "#58a6ff" }}>{p.ticker}</td>
                   <td style={S.td}>{p.quantity}</td>
-                  <td style={S.td}>${p.market_price?.toFixed(2)}</td>
-                  <td style={S.td}>${p.market_value?.toLocaleString()}</td>
-                  <td style={S.td}>{p.sector}</td>
-                  <td style={S.td}>{p.beta?.toFixed(2)}</td>
+                  <td style={S.td}>{p.market_price != null ? `$${p.market_price.toFixed(2)}` : "—"}</td>
+                  <td style={S.td}>{p.market_value != null ? `$${p.market_value.toLocaleString()}` : "—"}</td>
+                  <td style={S.td}>{p.sector ?? "—"}</td>
+                  <td style={S.td}>{p.beta != null ? p.beta.toFixed(2) : "—"}</td>
                 </tr>
               ))}
             </tbody>

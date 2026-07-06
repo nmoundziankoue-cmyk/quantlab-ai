@@ -248,6 +248,28 @@ def gateway_heartbeat() -> Dict[str, Any]:
     return {"status": "ok", "venues_pinged": 0}
 
 
+@router.get("/gateway/quotes")
+def get_all_gateway_quotes() -> Dict[str, Any]:
+    """Return all quotes currently in the in-memory quote cache across all venues."""
+    gw = get_market_data_gateway()
+    result: Dict[str, Any] = {}
+    for conn in gw._connectors.values():
+        for ticker, q in conn._quote_cache.items():
+            key = f"{q.ticker}@{q.venue.value}"
+            mid = (q.bid + q.ask) / 2.0 if (q.bid + q.ask) else 0.0
+            result[key] = {
+                "ticker": q.ticker,
+                "venue": q.venue.value,
+                "bid": q.bid,
+                "ask": q.ask,
+                "mid": round(mid, 4),
+                "spread_bps": round((q.ask - q.bid) / mid * 10_000, 2) if mid else 0.0,
+                "bid_size": q.bid_size,
+                "ask_size": q.ask_size,
+            }
+    return result
+
+
 # ===========================================================================
 # MARKET MICROSTRUCTURE — /m18/microstructure
 # ===========================================================================

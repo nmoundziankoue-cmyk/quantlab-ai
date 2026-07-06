@@ -32,7 +32,8 @@ export default function M17ExecutionCost() {
 
   const recordTrade = async () => {
     setMsg(null); setErr(null);
-    const body = { ...recordForm, quantity:Number(recordForm.quantity), arrival_price:Number(recordForm.arrival_price), execution_price:Number(recordForm.execution_price), benchmark_price:Number(recordForm.benchmark_price), commission:Number(recordForm.commission), bid_price:Number(recordForm.bid_price), ask_price:Number(recordForm.ask_price) };
+    const n = v => Number(String(v).replace(",", "."));
+    const body = { ...recordForm, quantity:n(recordForm.quantity), arrival_price:n(recordForm.arrival_price), execution_price:n(recordForm.execution_price), benchmark_price:n(recordForm.benchmark_price), commission:n(recordForm.commission), bid_price:n(recordForm.bid_price), ask_price:n(recordForm.ask_price) };
     const r = await fetch("/trading/tca/record", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body) });
     if (r.ok) setMsg("Trade recorded for TCA");
     else { const d = await r.json(); setErr(formatApiError(d.detail)); }

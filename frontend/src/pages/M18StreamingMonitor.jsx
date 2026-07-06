@@ -39,7 +39,7 @@ export default function M18StreamingMonitor() {
   useEffect(() => { if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight; }, [log]);
 
   const publishTick = async () => {
-    const r = await fetch("/m18/streaming/publish/tick", {
+    const r = await fetch("/m18/streaming/tick", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ticker, price: parseFloat(price), volume: parseFloat(volume), venue: "NYSE" }),
     });
@@ -53,7 +53,7 @@ export default function M18StreamingMonitor() {
   };
 
   const publishNews = async () => {
-    const r = await fetch("/m18/streaming/publish/news", {
+    const r = await fetch("/m18/streaming/news", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ticker, headline: `${ticker} reports strong quarterly results`, source: "Reuters", sentiment_score: 0.45 }),
     });

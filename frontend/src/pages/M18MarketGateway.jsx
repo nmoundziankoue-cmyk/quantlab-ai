@@ -36,13 +36,13 @@ export default function M18MarketGateway() {
   const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
   const setQuote = async () => {
-    const r = await post("/m18/gateway/quote/set", { ticker, bid: parseFloat(bid), ask: parseFloat(ask), bid_size: 100, ask_size: 100, venue });
+    const r = await post("/m18/gateway/quote", { ticker, bid: parseFloat(bid), ask: parseFloat(ask), bid_size: 100, ask_size: 100, venue });
     if (r.ok) { setMsg(`Quote set: ${ticker} bid=${bid} ask=${ask} @${venue}`); refresh(); }
     else { const d = await r.json(); setMsg(formatApiError(d.detail)); }
   };
 
   const ingestTick = async () => {
-    const r = await post("/m18/gateway/tick/ingest", { ticker, price: parseFloat(bid), volume: 1000, venue });
+    const r = await post("/m18/gateway/tick", { ticker, price: parseFloat(bid), volume: 1000, venue });
     if (r.ok) { setMsg(`Tick ingested: ${ticker} @ ${bid}`); }
     else { const d = await r.json(); setMsg(formatApiError(d.detail)); }
   };
