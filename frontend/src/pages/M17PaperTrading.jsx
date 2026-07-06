@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatApiError } from "../utils/formatApiError";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -63,7 +64,7 @@ export default function M17PaperTrading() {
       load();
     } else {
       const d = await r.json();
-      setErr(d.detail || "Error");
+      setErr(formatApiError(d.detail, "Error"));
     }
   };
 

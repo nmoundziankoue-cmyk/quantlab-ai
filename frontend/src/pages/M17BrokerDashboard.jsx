@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatApiError } from "../utils/formatApiError";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -39,14 +40,14 @@ export default function M17BrokerDashboard() {
     const body = { name: regForm.name, supported_asset_classes: regForm.supported_asset_classes.split(",").map(s=>s.trim()), supported_exchanges: regForm.supported_exchanges.split(",").map(s=>s.trim()) };
     const r = await fetch("/trading/brokers/register", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body) });
     if (r.ok) { setMsg("Broker registered"); load(); }
-    else { const d = await r.json(); setErr(d.detail); }
+    else { const d = await r.json(); setErr(formatApiError(d.detail)); }
   };
 
   const addCommission = async () => {
     const body = { ...commForm, base_rate: Number(commForm.base_rate), minimum_per_trade: Number(commForm.minimum_per_trade) };
     const r = await fetch("/trading/brokers/commission/add", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body) });
     if (r.ok) { setMsg("Commission schedule added"); load(); }
-    else { const d = await r.json(); setErr(d.detail); }
+    else { const d = await r.json(); setErr(formatApiError(d.detail)); }
   };
 
   return (

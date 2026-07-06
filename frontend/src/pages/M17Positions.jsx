@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatApiError } from "../utils/formatApiError";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -50,14 +51,14 @@ export default function M17Positions() {
     setMsg(null); setErr(null);
     const r = await fetch("/trading/positions/open", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({...openForm, quantity:Number(openForm.quantity), price:Number(openForm.price)}) });
     if (r.ok) { setMsg("Position opened"); loadPositions(); }
-    else { const d = await r.json(); setErr(d.detail); }
+    else { const d = await r.json(); setErr(formatApiError(d.detail)); }
   };
 
   const closePos = async () => {
     setMsg(null); setErr(null);
     const r = await fetch("/trading/positions/close", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({...closeForm, quantity:Number(closeForm.quantity), price:Number(closeForm.price)}) });
     if (r.ok) { const d = await r.json(); setMsg(`Closed — Realised P&L: $${d.realised_pnl}`); loadPositions(); }
-    else { const d = await r.json(); setErr(d.detail); }
+    else { const d = await r.json(); setErr(formatApiError(d.detail)); }
   };
 
   return (

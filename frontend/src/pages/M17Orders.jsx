@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatApiError } from "../utils/formatApiError";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -63,7 +64,7 @@ export default function M17Orders() {
     setMsg(null); setErr(null);
     const r = await fetch("/trading/oms/orders/cancel", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ order_id:cancelId }) });
     if (r.ok) { setMsg("Order cancelled"); loadAll(); loadOpen(); loadSummary(); }
-    else { const d = await r.json(); setErr(d.detail); }
+    else { const d = await r.json(); setErr(formatApiError(d.detail)); }
   };
 
   const renderOrderRow = (o) => (

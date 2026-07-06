@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatApiError } from "../utils/formatApiError";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -36,14 +37,14 @@ export default function M17TradeAnalytics() {
       const body = JSON.parse(trade);
       const r = await fetch("/trading/analytics/trades/add", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body) });
       if (r.ok) { setMsg("Trade added"); loadStats(); }
-      else { const d = await r.json(); setErr(d.detail); }
+      else { const d = await r.json(); setErr(formatApiError(d.detail)); }
     } catch(e) { setErr("Invalid JSON"); }
   };
 
   const loadStats = async () => {
     const r = await fetch("/trading/analytics/trades/statistics");
     if (r.ok) setStats(await r.json());
-    else { const d = await r.json(); setErr(d.detail); }
+    else { const d = await r.json(); setErr(formatApiError(d.detail)); }
   };
 
   const calcPerf = async () => {

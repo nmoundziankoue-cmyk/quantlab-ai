@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatApiError } from "../utils/formatApiError";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace", maxWidth: 480 },
@@ -29,7 +30,7 @@ export default function M17OrderTicket() {
     if (form.stop_price) body.stop_price = Number(form.stop_price);
     const r = await fetch("/trading/orders/submit", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
     if (r.ok) setResult(await r.json());
-    else { const d = await r.json(); setErr(d.detail || "Submission failed"); }
+    else { const d = await r.json(); setErr(formatApiError(d.detail, "Submission failed")); }
   };
 
   const f = (k, v) => setForm(p => ({ ...p, [k]: v }));

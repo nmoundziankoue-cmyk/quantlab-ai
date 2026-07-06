@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatApiError } from "../utils/formatApiError";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -40,7 +41,7 @@ export default function M17PerformanceAttribution() {
       const h = JSON.parse(holdings);
       const r = await fetch("/trading/attribution/brinson", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ holdings: h, model }) });
       if (r.ok) setResult(await r.json());
-      else { const d = await r.json(); setErr(d.detail); }
+      else { const d = await r.json(); setErr(formatApiError(d.detail)); }
     } catch { setErr("Invalid JSON"); }
   };
 
@@ -50,7 +51,7 @@ export default function M17PerformanceAttribution() {
       const h = JSON.parse(holdings);
       const r = await fetch("/trading/attribution/full-report", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ holdings: h, model }) });
       if (r.ok) setFullReport(await r.json());
-      else { const d = await r.json(); setErr(d.detail); }
+      else { const d = await r.json(); setErr(formatApiError(d.detail)); }
     } catch { setErr("Invalid JSON"); }
   };
 
@@ -60,7 +61,7 @@ export default function M17PerformanceAttribution() {
       const fe = JSON.parse(factorForm.factor_exposures);
       const r = await fetch("/trading/attribution/factor", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ portfolio_return:Number(factorForm.portfolio_return), benchmark_return:Number(factorForm.benchmark_return), factor_exposures:fe }) });
       if (r.ok) setFactorResult(await r.json());
-      else { const d = await r.json(); setErr(d.detail); }
+      else { const d = await r.json(); setErr(formatApiError(d.detail)); }
     } catch { setErr("Invalid factor JSON"); }
   };
 

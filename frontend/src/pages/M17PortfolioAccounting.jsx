@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatApiError } from "../utils/formatApiError";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -35,7 +36,7 @@ export default function M17PortfolioAccounting() {
     setMsg(null); setErr(null);
     const r = await fetch(url, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body) });
     if (r.ok) { const d = await r.json(); setMsg(d.message || "OK"); }
-    else { const d = await r.json(); setErr(d.detail || "Error"); }
+    else { const d = await r.json(); setErr(formatApiError(d.detail, "Error")); }
   };
 
   const loadNav = async () => {

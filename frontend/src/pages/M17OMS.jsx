@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatApiError } from "../utils/formatApiError";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -46,7 +47,7 @@ export default function M17OMS() {
     if (!form.stop_price) delete body.stop_price;
     const r = await fetch("/trading/orders/submit", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body) });
     if (r.ok) { setMsg("Order submitted"); load(); }
-    else { const d = await r.json(); setErr(d.detail || "Error"); }
+    else { const d = await r.json(); setErr(formatApiError(d.detail, "Error")); }
   };
 
   const cancelOrder = async (id) => {

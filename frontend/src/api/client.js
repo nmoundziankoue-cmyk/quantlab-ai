@@ -1,4 +1,5 @@
 import axios from "axios";
+import { formatApiError } from "../utils/formatApiError";
 
 const client = axios.create({
   baseURL: "",
@@ -34,7 +35,7 @@ client.interceptors.response.use(
   async (err) => {
     const originalRequest = err.config;
     const detail = err.response?.data?.detail ?? err.message ?? "Unknown error";
-    const msg = Array.isArray(detail) ? detail[0]?.msg : detail;
+    const msg = formatApiError(detail, "Unknown error");
 
     if (err.response?.status === 401 && !originalRequest._retry) {
       // Guest mode: if the original request had no auth header, don't attempt

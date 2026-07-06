@@ -1,4 +1,5 @@
 import axios from "axios";
+import { formatApiError } from "../utils/formatApiError";
 
 const BASE = "/auth";
 
@@ -13,7 +14,7 @@ _client.interceptors.response.use(
   (res) => res,
   (err) => {
     const detail = err.response?.data?.detail ?? err.message ?? "Unknown error";
-    return Promise.reject(new Error(Array.isArray(detail) ? detail[0]?.msg : detail));
+    return Promise.reject(new Error(formatApiError(detail, "Unknown error")));
   }
 );
 

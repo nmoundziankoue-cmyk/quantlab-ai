@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatApiError } from "../utils/formatApiError";
 
 const S = {
   wrap: { padding: 24, fontFamily: "monospace" },
@@ -34,21 +35,21 @@ export default function M17ExecutionCost() {
     const body = { ...recordForm, quantity:Number(recordForm.quantity), arrival_price:Number(recordForm.arrival_price), execution_price:Number(recordForm.execution_price), benchmark_price:Number(recordForm.benchmark_price), commission:Number(recordForm.commission), bid_price:Number(recordForm.bid_price), ask_price:Number(recordForm.ask_price) };
     const r = await fetch("/trading/tca/record", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body) });
     if (r.ok) setMsg("Trade recorded for TCA");
-    else { const d = await r.json(); setErr(d.detail); }
+    else { const d = await r.json(); setErr(formatApiError(d.detail)); }
   };
 
   const analyseTrade = async () => {
     setErr(null); setAnalysis(null);
     const r = await fetch("/trading/tca/analyse", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(analyseForm) });
     if (r.ok) setAnalysis(await r.json());
-    else { const d = await r.json(); setErr(d.detail); }
+    else { const d = await r.json(); setErr(formatApiError(d.detail)); }
   };
 
   const getReport = async () => {
     setErr(null); setReport(null);
     const r = await fetch("/trading/tca/report");
     if (r.ok) setReport(await r.json());
-    else { const d = await r.json(); setErr(d.detail); }
+    else { const d = await r.json(); setErr(formatApiError(d.detail)); }
   };
 
   const bps = v => v != null ? `${v.toFixed(1)} bps` : "—";
