@@ -6,29 +6,6 @@ import {
   ResponsiveContainer, ReferenceLine,
 } from "recharts";
 
-// ── Deterministic equity curve ────────────────────────────────────────────────
-function buildEquityCurve() {
-  const data = [];
-  let nav = 100_000, bench = 100_000;
-  const start = new Date("2024-01-02");
-  for (let i = 0; i < 52; i++) {
-    const n = Math.sin(i * 0.71 + 1.2) * 0.018 + Math.sin(i * 0.23 + 0.5) * 0.009;
-    nav   *= 1 + 0.27 / 52 + n;
-    const b = Math.sin(i * 0.71 + 0.9) * 0.014 + Math.sin(i * 0.17 + 1.1) * 0.007;
-    bench *= 1 + 0.23 / 52 + b;
-    const d = new Date(start);
-    d.setDate(d.getDate() + i * 7);
-    data.push({
-      date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      portfolio: Math.round(nav),
-      benchmark: Math.round(bench),
-    });
-  }
-  return data;
-}
-
-const EQUITY_DATA = buildEquityCurve();
-
 const ALLOCATION = [
   { name: "AAPL",  weight: 0.18, color: "#567EFF" },
   { name: "MSFT",  weight: 0.15, color: "#9D7FEA" },
@@ -38,15 +15,6 @@ const ALLOCATION = [
   { name: "JPM",   weight: 0.08, color: "#7A84A0" },
   { name: "META",  weight: 0.07, color: "#454D66" },
   { name: "Other", weight: 0.20, color: "#232A3D" },
-];
-
-const ACTIVITY = [
-  { time: "09:31", action: "Regime → BULL", detail: "AAPL · MA crossover confirmed", color: "#27C784" },
-  { time: "09:45", action: "Alert fired", detail: "NVDA VaR breach — 2.4% 1-day", color: "#E2A52B" },
-  { time: "10:02", action: "Backtest complete", detail: "Momentum · Sharpe 1.84 · +26.3%", color: "#9D7FEA" },
-  { time: "10:17", action: "Correlation update", detail: "AAPL↔MSFT r=0.82, AAPL↔AMZN r=0.61", color: "#567EFF" },
-  { time: "10:33", action: "Strategy ranked", detail: "Bull Trend #1 · Sharpe 2.12", color: "#27C784" },
-  { time: "11:05", action: "Monte Carlo", detail: "500 paths · VaR 95% = −3.1%", color: "#E5473E" },
 ];
 
 const MODULES = [
@@ -114,6 +82,17 @@ function KpiCard({ label, numValue, format, sub, color, delay }) {
   );
 }
 
+// ── KPI skeleton card shown while loading ────────────────────────────────────
+function KpiSkeleton({ label }) {
+  return (
+    <div style={{ ...S.kpiCard, opacity: 0.5 }}>
+      <div className="ql-label" style={{ marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 20, fontWeight: 600, color: "#454D66", marginBottom: 2 }}>—</div>
+      <div style={S.kpiSub}>Loading…</div>
+    </div>
+  );
+}
+
 // ── Allocation bar — animates width on mount ──────────────────────────────────
 function AllocBar({ color, weight }) {
   const [w, setW] = useState(0);
@@ -157,20 +136,64 @@ function ChartTooltip({ active, payload, label }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const last  = EQUITY_DATA[EQUITY_DATA.length - 1];
-  const first = EQUITY_DATA[0];
-  const pnl      = last.portfolio - first.portfolio;
-  const pnlPct   = ((last.portfolio / first.portfolio - 1) * 100).toFixed(1);
-  const benchPct = ((last.benchmark / first.benchmark - 1) * 100).toFixed(1);
-  const alpha    = (parseFloat(pnlPct) - parseFloat(benchPct)).toFixed(1);
+  const [btData, setBtData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]   = useState(null);
+  const [running, setRunning] = useState(false);
+
+  const runBacktest = () => {
+    setRunning(true);
+    setLoading(true);
+    setError(null);
+    fetch("/quant/dashboard/live-backtest?start=2019-01-01&end=2024-12-31")
+      .then(r => r.ok ? r.json() : r.json().then(d => Promise.reject(d.detail || "Backend error")))
+      .then(d => { setBtData(d); setLoading(false); setRunning(false); })
+      .catch(e => { setError(String(e)); setLoading(false); setRunning(false); });
+  };
+
+  useEffect(() => { runBacktest(); }, []);
+
+  const m     = btData?.metrics ?? {};
+  const curve = btData?.equity_curve ?? [];
+  const first = curve[0];
+  const last  = curve[curve.length - 1];
+
+  const finalNav    = btData?.final_equity ?? 0;
+  const initCap     = btData?.initial_capital ?? 100_000;
+  const totalRetPct = m.total_return != null ? (m.total_return * 100) : 0;
+  const pnl         = finalNav - initCap;
+  const benchFinal  = last?.benchmark ?? initCap;
+  const benchPct    = ((benchFinal / initCap - 1) * 100);
+  const alpha       = totalRetPct - benchPct;
+  const sharpe      = m.sharpe_ratio ?? 0;
+  const maxDD       = m.max_drawdown != null ? (m.max_drawdown * 100) : 0;
+  const winRate     = m.win_rate != null ? (m.win_rate * 100) : 0;
+  const numTrades   = m.num_trades ?? 0;
+  const startDate   = btData?.start_date ?? "2019";
+  const endDate     = btData?.end_date ?? "2024";
+
+  // Thin out the equity curve for the chart (max 260 points to keep Recharts fast)
+  const chartData = (() => {
+    if (!curve.length) return [];
+    const step = Math.max(1, Math.floor(curve.length / 260));
+    return curve
+      .filter((_, i) => i % step === 0 || i === curve.length - 1)
+      .map(p => ({
+        date: p.date?.slice(0, 10),
+        portfolio: p.portfolio,
+        benchmark: p.benchmark,
+      }));
+  })();
+
+  const kpiSkeleton = ["Portfolio NAV", "Total Return", "vs S&P 500", "Sharpe Ratio", "Max Drawdown", "Win Rate"];
 
   const kpis = [
-    { label: "Portfolio NAV", numValue: last.portfolio,      format: (v) => "$" + Math.round(v).toLocaleString("en-US"), sub: "Global Macro · USD",       color: "#DDE2EE" },
-    { label: "P&L YTD",       numValue: pnl,                 format: (v) => "+$" + Math.round(v).toLocaleString("en-US"), sub: `+${pnlPct}% return`,      color: "#27C784" },
-    { label: "vs S&P 500",    numValue: parseFloat(alpha),   format: (v) => "+" + v.toFixed(1) + "%",                    sub: `Benchmark +${benchPct}%`,  color: "#27C784" },
-    { label: "Sharpe Ratio",  numValue: 1.84,                format: (v) => v.toFixed(2),                                sub: "Ann. · rf = 5.0%",         color: "#E2A52B" },
-    { label: "Max Drawdown",  numValue: 4.2,                 format: (v) => "−" + v.toFixed(1) + "%",                   sub: "Peak-to-trough",            color: "#E5473E" },
-    { label: "Win Rate",      numValue: 61.5,                format: (v) => v.toFixed(1) + "%",                         sub: "Profitable weeks",          color: "#E2A52B" },
+    { label: "Portfolio NAV", numValue: finalNav,  format: (v) => "$" + Math.round(v).toLocaleString("en-US"), sub: `${btData?.num_tickers ?? "—"} tickers · USD`,        color: "#DDE2EE" },
+    { label: "Total Return",  numValue: totalRetPct, format: (v) => "+" + v.toFixed(1) + "%",                  sub: `$${Math.round(pnl).toLocaleString()} profit`,         color: "#27C784" },
+    { label: "vs S&P 500",   numValue: alpha,       format: (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%",  sub: `Benchmark +${benchPct.toFixed(1)}%`,                  color: "#27C784" },
+    { label: "Sharpe Ratio",  numValue: sharpe,      format: (v) => v.toFixed(2),                              sub: `Ann. · rf = 4.0% · ${numTrades} trades`,             color: "#E2A52B" },
+    { label: "Max Drawdown",  numValue: maxDD,       format: (v) => "−" + v.toFixed(1) + "%",                  sub: "Peak-to-trough",                                      color: "#E5473E" },
+    { label: "Win Rate",      numValue: winRate,     format: (v) => v.toFixed(1) + "%",                        sub: `${m.num_winning ?? "—"}W · ${m.num_losing ?? "—"}L`,  color: "#E2A52B" },
   ];
 
   return (
@@ -191,22 +214,51 @@ export default function Dashboard() {
           </motion.span>
           <span style={{ ...S.pill, color: "#9D7FEA", background: "#9D7FEA12" }}>4,660 tests</span>
           <span style={{ ...S.pill, color: "#567EFF", background: "#567EFF12" }}>40+ services</span>
+          <button
+            style={{ ...S.pill, background: running ? "#27C78412" : "#232A3D", color: running ? "#27C784" : "#7A84A0", border: "1px solid #232A3D", cursor: "pointer" }}
+            onClick={runBacktest}
+            disabled={running}
+          >
+            {running ? "Running…" : "↻ Rerun"}
+          </button>
         </div>
       </div>
 
+      {/* Error banner */}
+      {error && (
+        <div style={{ background: "#2d1a1a", border: "1px solid #E5473E44", borderRadius: 6, padding: "10px 14px", marginBottom: 12, fontSize: 11, color: "#E5473E", fontFamily: "var(--font-mono)" }}>
+          Backtest error: {error}
+        </div>
+      )}
+
+      {/* Data source badge */}
+      {!loading && btData && (
+        <div style={{ marginBottom: 10, fontSize: 10, color: "#454D66", fontFamily: "var(--font-mono)", display: "flex", gap: 16, alignItems: "center" }}>
+          <span style={{ color: "#27C784" }}>● yfinance</span>
+          <span>{btData.strategy_name}</span>
+          <span>{startDate} → {endDate}</span>
+          <span>{curve.length} trading days</span>
+          <span>{numTrades} trades executed</span>
+        </div>
+      )}
+
       {/* KPI row — animated count-up + entrance + hover */}
       <div style={S.kpiGrid}>
-        {kpis.map((k, i) => (
-          <KpiCard key={k.label} {...k} delay={i * 0.07} />
-        ))}
+        {loading
+          ? kpiSkeleton.map(l => <KpiSkeleton key={l} label={l} />)
+          : kpis.map((k, i) => <KpiCard key={k.label} {...k} delay={i * 0.07} />)
+        }
       </div>
 
       {/* Chart + Allocation */}
       <div style={S.row}>
         <div style={{ ...S.panel, flex: 1 }}>
-          <div style={S.panelTitle}>Equity Curve — 2024 YTD</div>
+          <div style={S.panelTitle}>
+            Equity Curve — {startDate} → {endDate}
+            {loading && <span style={{ color: "#454D66", marginLeft: 8 }}>loading…</span>}
+          </div>
           <ResponsiveContainer width="100%" height={210}>
-            <AreaChart data={EQUITY_DATA} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="gNav" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%"  stopColor="#E2A52B" stopOpacity={0.18} />
@@ -218,9 +270,9 @@ export default function Dashboard() {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#232A3D" />
-              <XAxis dataKey="date"  tick={{ fill: "#454D66", fontSize: 9 }} tickLine={false} interval={8} />
+              <XAxis dataKey="date"  tick={{ fill: "#454D66", fontSize: 9 }} tickLine={false} interval={Math.floor(chartData.length / 6)} />
               <YAxis tick={{ fill: "#454D66", fontSize: 9 }} tickLine={false} axisLine={false}
-                     tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} width={44} />
+                     tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} width={48} />
               <Tooltip content={<ChartTooltip />} />
               <ReferenceLine y={100000} stroke="#232A3D" strokeDasharray="4 2" />
               <Area type="monotone" dataKey="benchmark" stroke="#232A3D" fill="url(#gBench)" strokeWidth={1.5} dot={false} />
@@ -228,8 +280,8 @@ export default function Dashboard() {
             </AreaChart>
           </ResponsiveContainer>
           <div style={{ display: "flex", gap: 16, marginTop: 8, fontFamily: "var(--font-mono)", fontSize: 10, color: "#454D66" }}>
-            <span><span style={{ color: "#E2A52B" }}>━</span> Portfolio</span>
-            <span><span style={{ color: "#232A3D" }}>━</span> S&P 500</span>
+            <span><span style={{ color: "#E2A52B" }}>━</span> Portfolio ({btData?.num_tickers ?? "—"} tickers)</span>
+            <span><span style={{ color: "#232A3D" }}>━</span> S&P 500 (SPY)</span>
           </div>
         </div>
 
@@ -250,23 +302,30 @@ export default function Dashboard() {
       {/* Activity + Modules */}
       <div style={S.row}>
         <div style={{ ...S.panel, flex: 1 }}>
-          <div style={S.panelTitle}>Activity Log</div>
-          {ACTIVITY.map((a, i) => (
-            <motion.div
-              key={a.time + a.action}
-              style={S.actRow}
-              initial={{ opacity: 0, x: -14 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 + i * 0.08, duration: 0.32, ease: "easeOut" }}
-            >
-              <span className="ql-value" style={{ fontSize: 10, color: "#454D66", width: 36, flexShrink: 0 }}>{a.time}</span>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: a.color, flexShrink: 0, marginTop: 3 }} />
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "#DDE2EE", fontFamily: "var(--font-display)" }}>{a.action}</div>
-                <div className="ql-value" style={{ fontSize: 10, color: "#7A84A0" }}>{a.detail}</div>
-              </div>
-            </motion.div>
-          ))}
+          <div style={S.panelTitle}>Live Backtest Metrics</div>
+          {loading ? (
+            <div style={{ color: "#454D66", fontSize: 11, fontFamily: "var(--font-mono)" }}>Fetching market data…</div>
+          ) : btData ? (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {[
+                ["Annualised Return", m.annualized_return != null ? (m.annualized_return * 100).toFixed(2) + "%" : "—"],
+                ["Volatility (ann.)",  m.volatility != null ? (m.volatility * 100).toFixed(2) + "%" : "—"],
+                ["Sortino Ratio",      m.sortino_ratio != null ? m.sortino_ratio.toFixed(4) : "—"],
+                ["Calmar Ratio",       m.calmar_ratio != null ? m.calmar_ratio.toFixed(4) : "—"],
+                ["Profit Factor",      m.profit_factor != null && m.profit_factor > 0 ? m.profit_factor.toFixed(4) : "N/A"],
+                ["Max DD Duration",    m.max_drawdown_duration_days != null ? m.max_drawdown_duration_days + " days" : "—"],
+                ["Avg Holding Days",   m.avg_holding_days != null ? m.avg_holding_days.toFixed(1) + "d" : "—"],
+                ["Num Trades",         numTrades],
+                ["Winning",            m.num_winning ?? "—"],
+                ["Losing",             m.num_losing ?? "—"],
+              ].map(([label, val]) => (
+                <div key={label} style={{ background: "#0B0D13", borderRadius: 5, padding: "8px 10px" }}>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "#454D66", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 3 }}>{label}</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: "#DDE2EE" }}>{val}</div>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
 
         <div style={{ ...S.panel, flex: 1 }}>
@@ -322,7 +381,6 @@ const S = {
     letterSpacing: "0.08em",
     marginBottom: 14,
   },
-  actRow:   { display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 10 },
   modCard:  {
     background: "#131720",
     border: "1px solid",

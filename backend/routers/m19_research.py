@@ -1884,3 +1884,112 @@ def feature_driven_backtest(body: Dict[str, Any]) -> Dict[str, Any]:
         "metrics": result.metrics.to_dict(),
         "feature_engine": "M18 FeatureEngine (RSI + Kelly)",
     }
+
+
+# ===========================================================================
+# DASHBOARD LIVE BACKTEST — real yfinance data, auto-run on page load
+# ===========================================================================
+
+_DASHBOARD_BT_CACHE: Dict[str, Any] = {}
+_DASHBOARD_UNIVERSE = [
+    "AAPL", "MSFT", "NVDA", "AMZN", "GOOGL",
+    "META", "JPM", "V", "JNJ", "XOM", "TSLA", "UNH",
+]
+
+
+@router.get("/dashboard/live-backtest", response_model=Dict[str, Any], tags=["Dashboard"])
+def dashboard_live_backtest(
+    start: str = Query(default="2019-01-01", description="Start date YYYY-MM-DD"),
+    end: str = Query(default="2024-12-31", description="End date YYYY-MM-DD"),
+) -> Dict[str, Any]:
+    """Run and cache a real momentum backtest on 12 liquid tickers using yfinance.
+
+    Called by the main dashboard on page load. Results are cached in memory
+    for the lifetime of the process (no re-download on subsequent calls).
+    """
+    cache_key = f"{start}:{end}"
+    if cache_key in _DASHBOARD_BT_CACHE:
+        return _DASHBOARD_BT_CACHE[cache_key]
+
+    try:
+        import yfinance as yf
+        import datetime as _dt
+    except ImportError as exc:
+        raise HTTPException(status_code=500, detail=f"yfinance not available: {exc}")
+
+    all_syms = _DASHBOARD_UNIVERSE + ["SPY"]
+    try:
+        raw = yf.download(all_syms, start=start, end=end, progress=False)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"yfinance download failed: {exc}")
+
+    price_data: Dict[str, List[PriceBar]] = {}
+    for tkr in _DASHBOARD_UNIVERSE:
+        try:
+            closes = raw["Close"][tkr].dropna()
+            bars = [
+                PriceBar(
+                    date=d.strftime("%Y-%m-%d"),
+                    open=float(raw["Open"][tkr][d]),
+                    high=float(raw["High"][tkr][d]),
+                    low=float(raw["Low"][tkr][d]),
+                    close=float(closes[d]),
+                    volume=float(raw["Volume"][tkr][d]),
+                )
+                for d in closes.index
+            ]
+            if bars:
+                price_data[tkr] = bars
+        except Exception:
+            pass
+
+    if not price_data:
+        raise HTTPException(status_code=503, detail="No market data fetched")
+
+    pos_size = round(0.85 / len(price_data), 4)
+    signals = [
+        Signal(ticker=t, date=bars[0].date, signal_type=SignalType.LONG, strength=1.0)
+        for t, bars in price_data.items()
+    ]
+
+    result = _backtest_engine.run(
+        strategy_name=f"QL Momentum Universe ({len(price_data)} tickers)",
+        signals=signals,
+        price_data=price_data,
+        initial_capital=100_000.0,
+        commission_rate=0.0005,
+        slippage_bps=3.0,
+        position_size_pct=pos_size,
+        start_date=start,
+        end_date=end,
+    )
+
+    # Build benchmark equity curve from SPY, normalised to $100k
+    spy_cls = raw["Close"]["SPY"].dropna()
+    spy_base = float(spy_cls.iloc[0]) if len(spy_cls) else 1.0
+    spy_idx = {d.strftime("%Y-%m-%d"): float(v) for d, v in spy_cls.items()}
+
+    equity_curve = []
+    for ep in result.equity_curve:
+        spy_price = spy_idx.get(ep.date)
+        entry: Dict[str, Any] = {
+            "date": ep.date,
+            "portfolio": round(ep.equity, 2),
+        }
+        if spy_price is not None:
+            entry["benchmark"] = round(100_000.0 * spy_price / spy_base, 2)
+        equity_curve.append(entry)
+
+    response: Dict[str, Any] = {
+        "strategy_name": result.strategy_name,
+        "start_date": result.start_date,
+        "end_date": result.end_date,
+        "initial_capital": result.initial_capital,
+        "final_equity": round(result.final_equity, 2),
+        "num_tickers": len(price_data),
+        "tickers": list(price_data.keys()),
+        "equity_curve": equity_curve,
+        "metrics": result.metrics.to_dict(),
+    }
+    _DASHBOARD_BT_CACHE[cache_key] = response
+    return response
